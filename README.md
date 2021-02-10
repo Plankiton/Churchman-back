@@ -26,6 +26,7 @@ EventGroup:
 Event:
    - name
    - description
+   - model_type
    -> Covers
    -> Permissions
    -> Parent:Celule|Role
@@ -40,10 +41,13 @@ Celule:
    - class
    - leader
    - co_leader
+   -> Church
+   -> Parent:Celule|Church
    -> Members:Celular
 Member:
    - type
    - status
+   -> group:Event|Role|Celule|Church
    -> Person
 Person:
    - name
@@ -82,8 +86,14 @@ root                         - pastor
    Celule:root_G12           - 12 persons role:root_G12
       Role:root_G12
          Celule:default
-            Persons          - 12 persons role:
+            Persons          - 12 persons
 ```
+
+### Celule algorithm
+
+Quando a celula tem um G12 como líder, ela começa com o seu gênero e o seu número na lista da sua categoria (`M|F`+`{ord_number}`), celulas descendentes teríam o nome do da célula do seu G12 mais o id da subcelula (`G12_id`+`{ord_number0}..{ord_numberN}`).
+
+
 
 ## Role tree
 

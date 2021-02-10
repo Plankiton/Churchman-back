@@ -123,7 +123,7 @@ response:
    "data": [
      {
         "id": "<id>",
-         "name": "<name>",
+        "name": "<name>",
         "profile": {
            "data": "<image>",
            "alt_text": "<text>"
@@ -221,7 +221,7 @@ response:
 }
 ```
 
-## Get /events?p=`{page}`&l=`{limit}`
+## Get /event?p=`{page}`&l=`{limit}`
 
 Getting the event list from server, the querys `p` if for page number, and `l` is the limit of events per page.
 
@@ -241,6 +241,7 @@ response:
    "data": [
      {
         "id": "<id>",
+        "name": "<name>",
         "cover": {
            "data": "<image>",
            "alt_text": "<text>"
@@ -263,18 +264,75 @@ data:
 }
 ```
 response:
+## Get /celule/`{id}`
+
+Getting the celule informations by celule id, user logged must be on parent of celule if it exists
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
 ```json
 {
    "status": "sucess",
    "data": {
-       "id": "<id>",
+      "id": "<id>",
       "name": "<name>",
       "desc": "<description>",
-      "begin": "<begin_time>",
-      "end": "<end_time>",
+      "type": "church|celule",
+      "address": {
+          "street": "<street>",
+          "neighborhood": "<neighborhood>",
+          "city": "<city>",
+          "state": "<state>",
+          "cep": "<postal code>"
+      },
       "cover": {
          "data": "<data>",
-         "alt_text": "text"
+         "alt_text": "<text>"
+      },
+      "Parent": "<celule_id>", 
+      "members": [
+          {
+              "user": "<user_id>",
+          },
+          ...
+      ],
+   }
+}
+```
+
+## Get /celule?p=`{page}`&l=`{limit}`
+
+Getting the celule list from server, the querys `p` if for page number, and `l` is the limit of events per page.
+
+
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
       }
    }
 }
