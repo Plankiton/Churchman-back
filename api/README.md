@@ -21,7 +21,7 @@ response:
       "id": "<id>",
       "name": "<name>",
       "email": "<email>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -55,7 +55,7 @@ response:
       "id": "<id>",
       "name": "<name>",
       "email": "<email>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -68,7 +68,7 @@ response:
 }
 ```
 
-## Post /person
+## Post /user
 
 This route is for to create users on system, in this case the api will to send a email for atual people and him with `token` for verify before to create the user and returns a default sucess message.
 
@@ -82,7 +82,7 @@ data:
       "name": "<name>",
       "email": "<email>",
       "pass": "<password>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -101,7 +101,7 @@ response:
 }
 ```
 
-## Get /person?p=`{page}`&l=`{limit}`
+## Get /user?p=`{page}`&l=`{limit}`
 
 Getting the people list from server (the logged user must have high privileges), the querys `p` if for page number, and `l` is the limit of events per page.
 
@@ -123,7 +123,7 @@ response:
    "data": [
      {
         "id": "<id>",
-         "name": "<name>",
+        "name": "<name>",
         "profile": {
            "data": "<image>",
            "alt_text": "<text>"
@@ -136,7 +136,7 @@ response:
 
 ## 
 
-## Get /person/`{id}`
+## Get /user/`{id}`
 
 Getting user data, if logged user have'nt high privileges or is not the user it returns a error response
 
@@ -157,7 +157,7 @@ response:
       "id": "<id>",
       "name": "<name>",
       "email": "<email>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -172,7 +172,7 @@ response:
 
 
 
-## Post /person/`{id}`
+## Post /user/`{id}`
 
 Route for edit existent users, the logged user must be the user or have high privileges, otherwise it returns a error.
 
@@ -187,7 +187,7 @@ data:
       "name": "<name>",
       "email": "<email>",
       "pass": "<password>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -208,7 +208,7 @@ response:
       "id": "<id>",
       "name": "<name>",
       "email": "<email>",
-      "sex": "<sex>",
+      "genre": "<genre>",
       "phone": "<phone>",
       "born": "<born_date>",
       "state": "<civil_state>",
@@ -221,7 +221,7 @@ response:
 }
 ```
 
-## Get /events?p=`{page}`&l=`{limit}`
+## Get /event?p=`{page}`&l=`{limit}`
 
 Getting the event list from server, the querys `p` if for page number, and `l` is the limit of events per page.
 
@@ -241,6 +241,7 @@ response:
    "data": [
      {
         "id": "<id>",
+        "name": "<name>",
         "cover": {
            "data": "<image>",
            "alt_text": "<text>"
@@ -263,18 +264,75 @@ data:
 }
 ```
 response:
+## Get /celule/`{id}`
+
+Getting the celule informations by celule id, user logged must be on parent of celule if it exists
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
 ```json
 {
    "status": "sucess",
    "data": {
-       "id": "<id>",
+      "id": "<id>",
       "name": "<name>",
       "desc": "<description>",
-      "begin": "<begin_time>",
-      "end": "<end_time>",
+      "type": "church|celule",
+      "address": {
+          "street": "<street>",
+          "neighborhood": "<neighborhood>",
+          "city": "<city>",
+          "state": "<state>",
+          "cep": "<postal code>"
+      },
       "cover": {
          "data": "<data>",
-         "alt_text": "text"
+         "alt_text": "<text>"
+      },
+      "Parent": "<celule_id>", 
+      "members": [
+          {
+              "user": "<user_id>",
+          },
+          ...
+      ],
+   }
+}
+```
+
+## Get /celule?p=`{page}`&l=`{limit}`
+
+Getting the celule list from server, the querys `p` if for page number, and `l` is the limit of events per page.
+
+
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
       }
    }
 }
