@@ -1,16 +1,17 @@
 package main
 
 import (
-    _ "./api"
-    api "github.com/Coff3e/Api"
+    "os"
+    "./api"
+    "github.com/Coff3e/Api"
 )
 
 func main() {
-    _, err := api.CreateDB("host=localhost user=plankiton password=joaojoao dbname=church port=5432 sslmode=disable TimeZone=America/Araguaina")
-
-    if (err == nil) {
-        print("DB loaded!!\n")
+    con_str := "host=localhost user=plankiton password=joaojoao dbname=church port=5432 sslmode=disable TimeZone=America/Araguaina"
+    _, err := church.SignDB(con_str)
+    if (err != nil) {
+        os.Exit(1)
     }
 
-    print("Hello World!!\n\n")
+    api.Log("Database connected with sucess")
 }
