@@ -5,5 +5,6 @@ import (
 )
 
 type User struct {
-    api.Person
+    api.User
+    State   string   `json:"civil_state,omitempty" gorm:"default:sole"`
 }

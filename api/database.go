@@ -1,21 +1,15 @@
 package church
 
 import (
-    "github.com/Coff3e/Api"
     "gorm.io/gorm"
 )
 
 var db * gorm.DB
 var err error = nil
-var _models [] interface{}
 
-func SignDB(con_str string) (*gorm.DB, error) {
-    _models = [] interface{} {
-        &User{},
-    }
+func SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB, error) {
+    db, err = createDB(con_str)
 
-    db, err = api.CreateDB(con_str)
-
-    db.AutoMigrate(_models...)
+    db.AutoMigrate(&User{})
     return db, err
 }
