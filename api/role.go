@@ -49,13 +49,17 @@ func (self Role) Unsign(user User) (User, Role) {
     return user, self
 }
 
-func (self *Role) GetPersons() []User {
+func (self *Role) GetUsers() []User {
     e := db.First(self)
     if e.Error == nil {
+        user_list := []uint{}
         users := []User{}
-        e := db.Preload("user_roles").Find(&users)
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_roles ur INNER JOIN roles r ON ur.role_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Find(&user_list)
         if e.Error == nil {
-            return users
+            e := db.Find(&users, "id in ?", user_list)
+            if e.Error == nil {
+                return users
+            }
         }
     }
 
