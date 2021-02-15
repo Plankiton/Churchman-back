@@ -9,16 +9,13 @@ import (
 )
 
 func main() {
-    con_str := "file::memory:?cache=shared"
+    con_str := ":memory:"
     db, err := church.SignDB(con_str, api.Sqlite)
     if (err != nil) {
         os.Exit(1)
     }
 
     api.Log("Database connected with sucess")
-    print ("\n")
-
-    r := db.First(&church.User{})
 
     user := church.User{}
     user.ModelType = "User"
@@ -33,11 +30,10 @@ func main() {
     user.Create()
 
     api.Log("Trying to read User on database")
-    r = db.First(&user)
+    r := db.First(&user)
     if (r.Error == nil) {
         api.Log("Readed", api.ToLabel(user.ID, user.ModelType))
     }
-    print ("\n")
 
     api.Log("Trying to update User name from ", user.Name)
     user.Update(api.Dict {
@@ -45,7 +41,6 @@ func main() {
         })
     _ = db.First(&user, user.ID)
     api.Log("Updated to ", user.Name)
-    print ("\n")
 
     api.Log("Trying to delete User on database")
     user.Delete()
