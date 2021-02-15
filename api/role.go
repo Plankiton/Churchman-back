@@ -1,27 +1,20 @@
 package church
 
 import (
-    "reflect"
     "github.com/Coff3e/Api"
 )
 
 type Role struct {
     api.Role
-    Users []User   `json:"roles,omitempty" gorm:"many2many:user_roles;"`
 }
 
-type UserRoles struct {
-    api.Model
-    User    User  `json:"user,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-    Role    Role  `json:"user,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+type UserRole struct {
+    api.UserRole
 }
 
-func (self UserRoles) Sign(user User, role Role) (User, Role) {
-    self.User = user
-    self.Role = role
-
-    user.Roles = append(user.Roles, role)
-    role.Users = append(role.Users, user)
+func (self UserRole) Sign(user User, role Role) (User, Role) {
+    self.UserId = user.ID
+    self.RoleId = role.ID
 
     self.Create()
     api.Log("Linked", api.ToLabel(user.ID, user.ModelType), user.Name, "to", api.ToLabel(role.ID, role.ModelType), role.Name)
@@ -29,23 +22,9 @@ func (self UserRoles) Sign(user User, role Role) (User, Role) {
     return user, role
 }
 
-func (self UserRoles) Unsign(user User, role Role) (User, Role) {
-    self.User = user
-    self.Role = role
-
-    for i, r := range user.Roles {
-        if reflect.DeepEqual(r, role) {
-            user.Roles = append(user.Roles[:i-1], user.Roles[i+1:]...)
-            break
-        }
-    }
-
-    for i, u := range user.Roles {
-        if reflect.DeepEqual(u, user) {
-            role.Users = append(role.Users[:i-1], role.Users[i+1:]...)
-            break
-        }
-    }
+func (self UserRole) Unsign(user User, role Role) (User, Role) {
+    self.UserId = user.ID
+    self.RoleId = role.ID
 
     self.Delete()
     api.Log("Unlinked", api.ToLabel(user.ID, user.ModelType), user.Name, "from", api.ToLabel(role.ID, role.ModelType), role.Name)
@@ -53,15 +32,32 @@ func (self UserRoles) Unsign(user User, role Role) (User, Role) {
     return user, role
 }
 
-func (self Role) Sign(user *User) {
-    link := UserRoles{}
-    *user, self = link.Sign(*user, self)
+func (self Role) Sign(user User) (User, Role) {
+    link := UserRole{}
+    user, self = link.Sign(user, self)
+
+    return user, self
 }
 
-func (self Role) Unsign(user *User) {
-    link := UserRoles{}
-    e := db.First(&link, "user_id = ? AND role_id = ?", *user.ID, self.ID)
+func (self Role) Unsign(user User) (User, Role) {
+    link := UserRole{}
+    e := db.Where("user_id = ? AND role_id = ?", user.ID, self.ID).First(&link)
     if e.Error == nil {
-        *user, self = link.Unsign(*user, self)
+        user, self = link.Unsign(user, self)
     }
+
+    return user, self
+}
+
+func (self *Role) GetPersons() []User {
+    e := db.First(self)
+    if e.Error == nil {
+        users := []User{}
+        e := db.Preload("user_roles").Find(&users)
+        if e.Error == nil {
+            return users
+        }
+    }
+
+    return []User{}
 }

@@ -1,6 +1,7 @@
 package church
 
 import (
+    "github.com/Coff3e/Api"
     "gorm.io/gorm"
 )
 
@@ -9,7 +10,16 @@ var err error = nil
 
 func SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB, error) {
     db, err = createDB(con_str)
+    if err == nil {
+        models := []interface{} {&User{}, &Role{}, &Auth{}, &UserRole{}}
+        db.AutoMigrate(models...)
 
-    db.AutoMigrate(&User{})
+        if err == nil {
+            return db, err
+        } else {
+            api.Die("Error on creation of tables on database")
+        }
+    }
+
     return db, err
 }
