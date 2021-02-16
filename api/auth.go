@@ -2,6 +2,7 @@ package church
 
 import (
     "github.com/Coff3e/Api"
+    "fmt"
 )
 
 type Token struct {
@@ -9,26 +10,26 @@ type Token struct {
 }
 
 func (model *Token) Create() {
-    model.ModelType = GetModelType(model)
+    model.ModelType = api.GetModelType(model)
 
     user := User{}
     user.ID = model.UserId
 
-    e := _database.First(&user)
+    e := db.First(&user)
     if e.Error == nil {
         var order int64
-        _database.Find(model).Count(&order)
+        db.Find(model).Count(&order)
 
         model.ID = api.ToHash(fmt.Sprintf(
             "%d;%d;%s;%s;%s", order, user.ID, user.Name, user.Email, user.Phone,
         ))
 
-        _database.Create(model)
-        e = _database.First(model)
+        db.Create(model)
+        e = db.First(model)
         if e.Error == nil {
             ID := model.ID
             ModelType := model.ModelType
-            Log("Created", ToLabel(ID, ModelType))
+            api.Log("Created", api.ToLabel(ID, ModelType))
         }
     }
 }
