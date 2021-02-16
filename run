@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+
+from httpwatcher.filesystem import FileSystemWatcher as fsw
+from tornado import gen, ioloop
+from os import path, system as e
+from sys import argv as a
+
+static_root = path.abspath('.')
+if not path.exists(static_root) or not path.isdir(static_root):
+    raise MissingFolderError(static_root)
+
+print("Error" if e(f'''
+    go build -o /tmp/running {' '.join(a[1:])} && /tmp/running &
+''') else "Ok")
+@gen.coroutine
+def restart_api(*a):
+    print("Error" if e(f'''
+        killall running /tmp/running 2> /dev/null;
+        go build -o /tmp/running {' '.join(a[1:])} && /tmp/running &
+    ''') else "Ok")
+
+paths = [static_root]
+w = fsw(paths,
+    recursive=True,
+    on_changed=restart_api,
+    interval=1)
+
+try:
+    w.start()
+    ioloop.IOLoop.current().start()
+except KeyboardInterrupt:
+    w.shutdown()
+    exit(0)
