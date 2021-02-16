@@ -8,10 +8,10 @@ import (
 var db * gorm.DB
 var err error = nil
 
-func SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB, error) {
+func (router *Church) SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB, error) {
     db, err = createDB(con_str)
     if err == nil {
-        models := []interface{} {&User{}, &Role{}, &Auth{}, &UserRole{}}
+        models := []interface{} {&User{}, &Role{}, &Token{}, &UserRole{}}
         db.AutoMigrate(models...)
 
         if err == nil {
@@ -21,5 +21,6 @@ func SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB,
         }
     }
 
-    return db, err
+    router.Database = db
+    return router.Database, err
 }

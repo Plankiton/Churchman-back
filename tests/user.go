@@ -10,7 +10,8 @@ import (
 
 func main() {
     con_str := ":memory:"
-    db, err := church.SignDB(con_str, api.Sqlite)
+    router := church.Church{}
+    db, err := router.SignDB(con_str, api.Sqlite)
     if (err != nil) {
         os.Exit(1)
     }

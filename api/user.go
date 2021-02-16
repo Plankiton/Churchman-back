@@ -15,14 +15,14 @@ func (self *User) SetProfile(profile Image) {
         tmp_profile := Image{}
         e := db.First(&tmp_profile, "id = ?", self.ProfileId)
         if e.Error == nil {
-            tmp_Profile.Delete()
+            tmp_profile.Delete()
         }
     }
 
-    self.ProfileId = Profile.id
+    self.ProfileId = profile.ID
     self.Save()
 
-    Profile.Create()
+    profile.Create()
 }
 
 func (self *User) GetProfile() Image {
