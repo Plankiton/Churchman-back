@@ -7,6 +7,32 @@ import (
 type User struct {
     api.User
     State   string   `json:"civil_state,omitempty" gorm:"default:sole"`
+    ProfileId uint     `json:",empty"`
+}
+
+func (self *User) SetProfile(profile Image) {
+    {
+        tmp_profile := Image{}
+        e := db.First(&tmp_profile, "id = ?", self.ProfileId)
+        if e.Error == nil {
+            tmp_Profile.Delete()
+        }
+    }
+
+    self.ProfileId = Profile.id
+    self.Save()
+
+    Profile.Create()
+}
+
+func (self *User) GetProfile() Image {
+    profile := Image{}
+    e := db.First(&profile, "id = ?", self.ProfileId)
+    if e.Error == nil {
+        return profile
+    }
+
+    return Image{}
 }
 
 func (self *User) GetRoles() []Role {
