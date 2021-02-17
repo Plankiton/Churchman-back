@@ -37,6 +37,21 @@ func (model *Celule) Create() {
     }
 }
 
+func (model *UserCelule) Create() {
+    model.ModelType = "UserCelule"
+
+    db.Create(model)
+
+    e := db.First(model)
+    if e.Error == nil {
+
+        ID := model.ID
+        ModelType := model.ModelType
+        api.Log("Created", api.ToLabel(ID, ModelType))
+    }
+}
+
+
 func (self UserCelule) Sign(user User, celule Celule) (User, Celule) {
     self.UserId = user.ID
     self.GroupId = celule.ID

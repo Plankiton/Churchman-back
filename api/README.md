@@ -284,7 +284,7 @@ response:
          "data": "<data>",
          "alt_text": "<text>"
       },
-      "Parent": "<celule_id>", 
+      "parent": "<role_id|user_id|celule_id|event_id|event_group_id>", 
       "members": [
           {
               "user": "<user_id>",
