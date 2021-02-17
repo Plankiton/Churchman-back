@@ -39,6 +39,21 @@ func main() {
     api.Log("Trying to Sign User to Celule")
     celule.Sign(user)
 
+    api.Log("Trying to Get User list from Celule")
+    print("\tPoor users -> [ ")
+    for _, u := range celule.GetUsers() {
+        print(api.ToLabel(u.ID, u.ModelType), ", ")
+    }
+    print("]\n")
+
+    api.Log("Trying to get Celule list from User")
+    print("\t", user.Name, "-> [ ")
+    for _, u := range user.GetCelules() {
+        print(api.ToLabel(u.ID, u.ModelType), ", ")
+    }
+    print("]\n")
+
     api.Log("Trying to Unsign User to Celule")
     celule.Unsign(user)
+
 }

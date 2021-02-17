@@ -66,7 +66,7 @@ func (self Celule) Sign(user User) (User, Celule) {
 
 func (self Celule) Unsign(user User) (User, Celule) {
     link := UserCelule{}
-    e := db.Where("user_id = ? AND celule_id = ?", user.ID, self.ID).First(&link)
+    e := db.Where("user_id = ? AND group_id = ?", user.ID, self.ID).First(&link)
     if e.Error == nil {
         user, self = link.Unsign(user, self)
     }
@@ -79,7 +79,7 @@ func (self *Celule) GetUsers() []User {
     if e.Error == nil {
         user_list := []uint{}
         users := []User{}
-        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_celules ur INNER JOIN celules r ON ur.celule_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Find(&user_list)
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_groups ur INNER JOIN groups r ON ur.group_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Find(&user_list)
         if e.Error == nil {
             e := db.Find(&users, "id in ?", user_list)
             if e.Error == nil {
@@ -89,4 +89,21 @@ func (self *Celule) GetUsers() []User {
     }
 
     return []User{}
+}
+
+func (self *User) GetCelules() []Celule {
+    e := db.First(self)
+    if e.Error == nil {
+        celule_list := []uint{}
+        celules := []Celule{}
+        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID).Find(&celule_list)
+        if e.Error == nil {
+            e := db.Find(&celules, "id in ?", celule_list)
+            if e.Error == nil {
+                return celules
+            }
+        }
+    }
+
+    return []Celule{}
 }
