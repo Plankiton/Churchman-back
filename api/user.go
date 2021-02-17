@@ -34,20 +34,3 @@ func (self *User) GetProfile() Image {
 
     return Image{}
 }
-
-func (self *User) GetRoles() []Role {
-    e := db.First(self)
-    if e.Error == nil {
-        role_list := []uint{}
-        roles := []Role{}
-        e := db.Raw("SELECT r.id FROM roles r INNER JOIN user_roles ur INNER JOIN users u ON ur.role_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID).Find(&role_list)
-        if e.Error == nil {
-            e := db.Find(&roles, "id in ?", role_list)
-            if e.Error == nil {
-                return roles
-            }
-        }
-    }
-
-    return []Role{}
-}
