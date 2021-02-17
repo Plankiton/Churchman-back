@@ -134,7 +134,7 @@ response:
 }
 ```
 
-## 
+
 
 ## Get /user/`{id}`
 
@@ -264,19 +264,6 @@ data:
 }
 ```
 response:
-## Get /celule/`{id}`
-
-Getting the celule informations by celule id, user logged must be on parent of celule if it exists
-
-data:
-
-```json
-{
-   "auth": "<token>"
-}
-```
-
-response:
 
 ```json
 {
@@ -304,6 +291,45 @@ response:
           },
           ...
       ],
+   }
+}
+```
+
+
+
+## Get /celule/`{id}`
+
+Getting the celule informations by celule id, user logged must be on parent of celule if it exists
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "type": "church|celule",
+      "address": {
+          "street": "<street>",
+          "neighborhood": "<neighborhood>",
+          "city": "<city>",
+          "state": "<state>",
+          "cep": "<postal code>"
+      },
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
+      },
+      "Parent": "<celule_id>",
    }
 }
 ```
