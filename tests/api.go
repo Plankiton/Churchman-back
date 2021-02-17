@@ -21,10 +21,21 @@ func main() {
         return api.Response {
             Data: "JOAO É GAYZÃOOO!!",
         }, 200
+    }).Add("get", "/name/{name}", api.RouteConf {}, func(r *http.Request) (api.Response, int) {
+        vars, err := api.GetPathVars("/name/{name}", r.URL.Path)
+        if err != nil {
+            return api.Response {
+                Data: "Request errada!!",
+            }, 400
+        }
+
+        return api.Response {
+            Data: vars["name"]+" É GAYZÃOOO!!",
+        }, 200
     })
     go r.Run("/", 8000)
 
-    for _, url := range []string{"http://localhost:8000/", "http://localhost:8000/joao"} {
+    for _, url := range []string{"http://localhost:8000/", "http://localhost:8000/joao", "http://localhost:8000/name/maria"} {
         body := new(bytes.Buffer)
         json.NewEncoder(body).Encode(api.Request {
             Token: "1290839028903809",
@@ -43,7 +54,7 @@ func main() {
             res.Body.Close()
 
             r_raw_body := new(bytes.Buffer)
-            r_raw_body.ReadFrom(res.Body)
+            json.NewEncoder(r_raw_body).Encode(r_body)
 
             if  r_body.Type == "Error" {
                 api.War("Sucessfull request with error\n\t-> Response:", r_raw_body)
@@ -61,7 +72,7 @@ func main() {
             res.Body.Close()
 
             r_raw_body := new(bytes.Buffer)
-            r_raw_body.ReadFrom(res.Body)
+            json.NewEncoder(r_raw_body).Encode(r_body)
 
             if  r_body.Type == "Error" {
                 api.War("Sucessfull request with error\n\t-> Response:", r_raw_body)
