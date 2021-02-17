@@ -11,7 +11,7 @@ var err error = nil
 func (router *Church) SignDB(con_str string, createDB func (string) (*gorm.DB, error)) (*gorm.DB, error) {
     db, err = createDB(con_str)
     if err == nil {
-        models := []interface{} {&User{}, &Role{}, &Token{}, &UserRole{}}
+        models := []interface{} {&User{}, &Role{}, &Token{}, &UserRole{}, &Celule{}, &UserCelule{}}
         db.AutoMigrate(models...)
 
         if err == nil {
