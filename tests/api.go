@@ -17,12 +17,11 @@ func main() {
     if (err != nil) {
         os.Exit(1)
     }
-    r.Add("post", "/joao", api.RouteConf {}, func(r *http.Request) (api.Response, int) {
+    r.Add("post", "/joao", api.RouteConf {}, func(c api.RouteConf, r *http.Request) (api.Response, int) {
         return api.Response {
             Data: "JOAO É GAYZÃOOO!!",
         }, 200
-    }).Add("get", "/name/{name}", api.RouteConf {}, func(r *http.Request) (api.Response, int) {
-        vars, err := api.GetPathVars("/name/{name}", r.URL.Path)
+    }).Add("get", "/name/{name}", api.RouteConf {}, func(c api.RouteConf, r *http.Request) (api.Response, int) {
         if err != nil {
             return api.Response {
                 Data: "Request errada!!",
@@ -30,7 +29,7 @@ func main() {
         }
 
         return api.Response {
-            Data: vars["name"]+" É GAYZÃOOO!!",
+            Data: c["path_vars"].(map[string]string)["name"]+" É GAYZÃOOO!!",
         }, 200
     })
     go r.Run("/", 8000)
