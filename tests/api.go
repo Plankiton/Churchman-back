@@ -17,21 +17,18 @@ func main() {
     if (err != nil) {
         os.Exit(1)
     }
-    r.Add("post", "/joao", api.RouteConf {}, func(r *http.Request) (api.Response, int) {
+    r.Add("post", "/joao", api.RouteConf {}, func(r api.Request) (api.Response, int) {
+
         return api.Response {
             Data: "JOAO É GAYZÃOOO!!",
         }, 200
-    }).Add("get", "/name/{name}", api.RouteConf {}, func(r *http.Request) (api.Response, int) {
-        vars, err := api.GetPathVars("/name/{name}", r.URL.Path)
-        if err != nil {
-            return api.Response {
-                Data: "Request errada!!",
-            }, 400
-        }
+
+    }).Add("get", "/name/{name}", api.RouteConf {}, func(r api.Request) (api.Response, int) {
 
         return api.Response {
-            Data: vars["name"]+" É GAYZÃOOO!!",
+            Data: r.PathVars["name"]+" É GAYZÃOOO!!",
         }, 200
+
     })
     go r.Run("/", 8000)
 
