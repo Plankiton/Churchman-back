@@ -2,6 +2,7 @@ package church
 
 import (
     "github.com/Coff3e/Api"
+    "reflect"
     "fmt"
 )
 
@@ -34,4 +35,47 @@ func (model *Token) Create() {
     }
 }
 
+func Login(r api.Request) (api.Response, int) {
+    var data map[string]interface{}
+    switch reflect.TypeOf(r.Data).Kind() {
+    case reflect.MapOf(reflect.TypeOf(generic_string), reflect.TypeOf(&generic_interface).Elem()).Kind():
+        data = r.Data.(map[string]interface{})
+    default:
+        msg := fmt.Sprint("Authentication fail, bad request, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
 
+    user := User {}
+
+    res := db.First(&user, "email = ?", data["email"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Authentication fail, no users with \"", data["email"], "\" registered")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    if user.CheckPass(data["pass"].(string)) {
+        token := Token {}
+        token.UserId = user.ID
+        token.Create()
+
+        return api.Response {
+            Type: "Sucess",
+            Data: token,
+        }, 200
+    }
+
+    msg := fmt.Sprint("Authentication fail, password from <", user.Name, ":", user.ID,"> is wrong, permission denied")
+    api.Err(msg)
+    return api.Response {
+        Message: msg,
+        Type:    "Error",
+    }, 405
+}
