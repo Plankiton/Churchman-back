@@ -1,23 +1,12 @@
 package main
 
 import (
-    "os"
     "time"
 
     "../api"
-    "github.com/Coff3e/Api"
 )
 
-func main() {
-    con_str := "fake_db.db"
-    router := church.Church{}
-    _, err := router.SignDB(con_str, api.Sqlite)
-    if (err != nil) {
-        os.Exit(1)
-    }
-
-    api.Log("Database connected with sucess")
-
+func CreateFakeDB() {
     joao := church.User{}
     joao.ModelType = "User"
     joao.Name = "Joao da Silva"
@@ -43,6 +32,11 @@ func main() {
     poor := church.Role{}
     poor.Name = "Poor"
 
+    joao_login := church.Token{}
+    joao_login.UserId = joao.ID
+
+    joao_login.Token.Create()
+
     maria.Create()
     joao.Create()
 
@@ -53,5 +47,4 @@ func main() {
     poor.Sign(joao)
 
     person.Sign(maria)
-
 }

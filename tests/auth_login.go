@@ -11,14 +11,17 @@ import (
 )
 
 func main() {
-    con_str := "fake_db.db"
+    con_str := ":memory:"
     r := church.Church{}
     _, err := r.SignDB(con_str, api.Sqlite)
     if (err != nil) {
         os.Exit(1)
     }
+
+    CreateFakeDB()
+
     r.Add(
-        "post", "/login", api.RouteConf {}, church.Login,
+        "post", "/login", api.RouteConf {}, church.LogIn,
     )
     go r.Run("/", 8000)
 
