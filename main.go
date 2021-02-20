@@ -17,6 +17,10 @@ func main() {
     api.Log("Database connected with sucess")
     r.Add(
         "post", "/login", api.RouteConf {}, church.LogIn,
+    ).Add(
+        "post", "/logout", api.RouteConf {
+            "need-auth": true,
+        }, church.LogOut,
     )
     r.Run("/", 8000)
 }
