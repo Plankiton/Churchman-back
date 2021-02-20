@@ -79,3 +79,17 @@ func LogIn(r api.Request) (api.Response, int) {
         Type:    "Error",
     }, 405
 }
+
+func LogOut(r api.Request) (api.Response, int) {
+    token := Token {}
+    token.ID = r.Token
+
+    db.First(&token)
+    token.Delete()
+
+    msg := fmt.Sprint("Token \"", r.Token, "\" removed")
+    return api.Response {
+        Type: "Sucess",
+        Message: msg,
+    }, 200
+}
