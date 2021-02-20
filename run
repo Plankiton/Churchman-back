@@ -10,20 +10,20 @@ if not path.exists(static_root) or not path.isdir(static_root):
     raise MissingFolderError(static_root)
 
 print("Error" if e(f'''
-    go build -o /tmp/running {' '.join(a[1:])} && /tmp/running &
+    go build -o /tmp/running main.go && /tmp/running &
 ''') else "Ok")
 @gen.coroutine
 def restart_api(*a):
     print("Error" if e(f'''
         killall running /tmp/running 2> /dev/null;
-        go build -o /tmp/running {' '.join(a[1:])} && /tmp/running &
+        go build -o /tmp/running main.go && /tmp/running &
     ''') else "Ok")
 
 paths = [static_root]
 w = fsw(paths,
     recursive=True,
     on_changed=restart_api,
-    interval=1)
+    interval=5000)
 
 try:
     w.start()
