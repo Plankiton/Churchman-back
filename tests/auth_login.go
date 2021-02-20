@@ -27,11 +27,11 @@ func main() {
 
     url := "http://localhost:8000/login"
     for _, d := range []interface{}{
-        map[string]string{"email": "maria@joao.com", "pass": "joao"},
         map[string]string{"email": "maria@j.com", "pass": "maria"},
         map[string]string{"email": "maria@j.com", "pass": "joao"},
         []map[string]string{{"j": "j", "pass": "joao"}},
         []map[interface{}]string{{"j": "j", "pass": "joao"},{0:"joao"}},
+        map[string]string{"email": "maria@joao.com", "pass": "joao"},
     } {
 
         body := new(bytes.Buffer)
