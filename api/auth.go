@@ -68,7 +68,10 @@ func LogIn(r api.Request) (api.Response, int) {
 
         return api.Response {
             Type: "Sucess",
-            Data: token,
+            Data: map[string]interface{} {
+                "token": token.ID,
+                "user": user,
+            },
         }, 200
     }
 
@@ -80,6 +83,34 @@ func LogIn(r api.Request) (api.Response, int) {
     }, 405
 }
 
+func Verify(r api.Request) (api.Response, int) {
+    token := Token {}
+    token.ID = r.Token
+
+    user := User {}
+    user.ID = token.UserId
+
+
+    db.First(&token)
+    res := db.First(&user)
+    if res.Error == nil {
+        msg := fmt.Sprint("Token \"", r.Token, "\" Is valid")
+        api.Log(msg)
+        return api.Response {
+            Type: "Sucess",
+            Message: msg,
+        }, 200
+    }
+
+    msg := fmt.Sprint("Authentication fail, user not found, permission denied")
+    api.Err(msg)
+    token.Delete()
+    return api.Response {
+        Message: msg,
+        Type:    "Error",
+    }, 404
+}
+
 func LogOut(r api.Request) (api.Response, int) {
     token := Token {}
     token.ID = r.Token
@@ -88,6 +119,7 @@ func LogOut(r api.Request) (api.Response, int) {
     token.Delete()
 
     msg := fmt.Sprint("Token \"", r.Token, "\" removed")
+    api.Log(msg)
     return api.Response {
         Type: "Sucess",
         Message: msg,
