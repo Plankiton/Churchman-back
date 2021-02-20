@@ -35,7 +35,7 @@ func (model *Token) Create() {
     }
 }
 
-func Login(r api.Request) (api.Response, int) {
+func LogIn(r api.Request) (api.Response, int) {
     var data map[string]interface{}
     switch reflect.TypeOf(r.Data).Kind() {
     case reflect.MapOf(reflect.TypeOf(generic_string), reflect.TypeOf(&generic_interface).Elem()).Kind():
