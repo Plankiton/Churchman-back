@@ -32,11 +32,6 @@ func CreateFakeDB() {
     poor := church.Role{}
     poor.Name = "Poor"
 
-    joao_login := church.Token{}
-    joao_login.UserId = joao.ID
-
-    joao_login.Token.Create()
-
     maria.Create()
     joao.Create()
 
@@ -47,4 +42,8 @@ func CreateFakeDB() {
     poor.Sign(joao)
 
     person.Sign(maria)
+
+    joao_login := church.Token{}
+    joao_login.UserId = joao.ID
+    joao_login.Create()
 }
