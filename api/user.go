@@ -1,7 +1,10 @@
 package church
 
 import (
-    "github.com/Coff3e/Api"
+	"fmt"
+	"time"
+
+	"github.com/Coff3e/Api"
 )
 
 type User struct {
@@ -50,4 +53,61 @@ func (self *User) GetRoles() []Role {
     }
 
     return []Role{}
+}
+
+func CreateUser(r api.Request) (api.Response, int) {
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("User create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    data := r.Data.(map[string]interface{})
+
+    if (len(data)<5){
+        msg := "User create fail, Obrigatory field"
+        if (len(data)==4) {
+            msg += "s"
+        }
+        msg += " missing: "
+        for _, k := range []string{
+            "email", "name", "pass", "born", "genre",
+        } {
+            if _, exist := data[k]; !exist {
+                msg += fmt.Sprintf(`"%s", `, k)
+            }
+        }
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    res := db.First(&User {}, "email = ?", data["email"])
+    if res.Error == nil {
+        msg := fmt.Sprint("User create fail, user already registered")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 500
+    }
+
+    user := User {}
+
+    api.MapTo(data, &user)
+    born_time, _ := time.Parse(TimeLayout(), data["born"].(string))
+
+    user.Born = born_time
+    user.SetPass(data["pass"].(string))
+    user.Create()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: user,
+    }, 200
 }
