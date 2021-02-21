@@ -25,6 +25,10 @@ func main() {
         "post", "/verify", api.RouteConf {
             "need-auth": true,
         }, church.Verify,
+    ).Add(
+        "post", "/user", api.RouteConf {
+            //"need-auth": true,
+        }, church.CreateUser,
     )
     r.Run("/", 8000)
 }
