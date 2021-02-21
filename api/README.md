@@ -2,7 +2,7 @@
 
 ---
 
-## Get /auth
+## Post /verify
 
 This route verify `token` for login and show data from logged user if him logged, othewise it send a error message.
 
@@ -18,53 +18,75 @@ response:
 {
    "type": "sucess",
    "data": {
-      "id": "<id>",
-      "name": "<name>",
-      "email": "<email>",
-      "genre": "<genre>",
-      "phone": "<phone>",
-      "born": "<born_date>",
-      "state": "<civil_state>",
-      "profile": {
-           "data": "<image>",
-           "alt_text": "<text>"
-      },
-      "auth": "<token>"
+      "auth": "<token>",
+      "user": {
+          "id": "<id>",
+          "name": "<name>",
+          "email": "<email>",
+          "genre": "<genre>",
+          "phone": "<phone>",
+          "born": "<born_date>",
+          "state": "<civil_state>",
+          "profile": {
+              "data": "<image>",
+              "alt_text": "<text>"
+          }
+      }
    }
 }
 ```
 
-## Post /auth
+## Post /login
 
 This route is the way to make a login on server, the return will be the user data and the login `token`.
 
 data:
 ```json
 {
-"auth": "<token>",
-"data": {
-   "email": "<email>",
-   "pass": "<password>" 
-}}
+    "data": {
+       "email": "<email>",
+       "pass": "<password>" 
+    }
+}
 ```
 response:
 ```json
 {
    "type": "sucess",
    "data": {
-      "id": "<id>",
-      "name": "<name>",
-      "email": "<email>",
-      "genre": "<genre>",
-      "phone": "<phone>",
-      "born": "<born_date>",
-      "state": "<civil_state>",
-      "profile": {
-           "data": "<image>",
-           "alt_text": "<text>"
-      },
-      "auth": "<token>"
+      "auth": "<token>",
+      "user": {
+          "id": "<id>",
+          "name": "<name>",
+          "email": "<email>",
+          "genre": "<genre>",
+          "phone": "<phone>",
+          "born": "<born_date>",
+          "state": "<civil_state>",
+          "profile": {
+              "data": "<image>",
+              "alt_text": "<text>"
+          }
+      }
    }
+}
+```
+
+## Post /logout
+
+This route is the way to make a login on server, the return will be the user data and the login `token`.
+
+data:
+```json
+{
+    "auth": "<token>"
+}
+```
+response:
+```json
+{
+   "type": "sucess",
+   "message": "Token \"<Token>\" removed"
 }
 ```
 
