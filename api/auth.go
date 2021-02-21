@@ -2,7 +2,6 @@ package church
 
 import (
     "github.com/Coff3e/Api"
-    "reflect"
     "fmt"
 )
 
@@ -37,10 +36,9 @@ func (model *Token) Create() {
 
 func LogIn(r api.Request) (api.Response, int) {
     var data map[string]interface{}
-    switch reflect.TypeOf(r.Data).Kind() {
-    case reflect.MapOf(reflect.TypeOf(generic_string), reflect.TypeOf(&generic_interface).Elem()).Kind():
+    if validData(r.Data, generic_json_obj) {
         data = r.Data.(map[string]interface{})
-    default:
+    } else {
         msg := fmt.Sprint("Authentication fail, bad request, data need to be a object")
         api.Err(msg)
         return api.Response {
