@@ -10,7 +10,13 @@ import (
 func main() {
     con_str := "host=localhost user=plankiton password=joaojoao dbname=church port=5432 sslmode=disable TimeZone=America/Araguaina"
     r := church.Church{}
-    _, err := r.SignDB(con_str, api.Postgres)
+
+    var err error
+    if os.Getenv("DEBUG_MODE") == "true" {
+        _, err = r.SignDB("/tmp/debug.db", api.Sqlite)
+    } else {
+        _, err = r.SignDB(con_str, api.Postgres)
+    }
     if (err != nil) {
         os.Exit(1)
     }

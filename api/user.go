@@ -114,20 +114,31 @@ func CreateUser(r api.Request) (api.Response, int) {
 }
 
 func CreateUserProfile(r api.Request) (api.Response, int) {
-    if r.Data == nil {
+    user := User{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "data is null",
-        }, 500
+            Message: "User not found",
+        }, 404
+    }
+
+    if r.Data == nil || validData(r.Data, generic_form) {
+        return api.Response{
+            Type: "Error",
+            Message: "Data must be a multipart-form",
+        }, 400
     }
 
     data := r.Data.(*mp.Form)
 
-    i := File {}
-    i.Load(data)
+    profile := File {}
+    profile.Load(data)
+    profile.Create()
 
+    user.SetProfile(profile)
     return api.Response {
         Type: "Sucess",
-        Data: i.Render(),
+        Data: profile.Render(),
     }, 200
 }
