@@ -25,8 +25,6 @@ func (self *User) SetProfile(profile File) {
 
     self.ProfileId = profile.ID
     self.Save()
-
-    profile.Create()
 }
 
 func (self *User) GetProfile() File {
@@ -134,7 +132,13 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
 
     profile := File {}
     profile.Load(data)
-    profile.Create()
+
+    if db.First(&profile).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Error on creating of profile on database",
+        }, 500
+    }
 
     user.SetProfile(profile)
     return api.Response {
