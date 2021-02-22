@@ -15,20 +15,23 @@ func main() {
         os.Exit(1)
     }
     api.Log("Database connected with sucess")
-    r.Add(
-        "post", "/login", api.RouteConf {}, church.LogIn,
-    ).Add(
-        "post", "/logout", api.RouteConf {
-            "need-auth": true,
-        }, church.LogOut,
-    ).Add(
-        "post", "/verify", api.RouteConf {
-            "need-auth": true,
-        }, church.Verify,
-    ).Add(
-        "post", "/user", api.RouteConf {
-            //"need-auth": true,
-        }, church.CreateUser,
+    r.
+    Add(
+        "post", "/login", api.RouteConf {
+            "need-auth": false,
+        }, church.LogIn,
+    ).
+    Add(
+        "post", "/logout", nil, church.LogOut,
+    ).
+    Add(
+        "post", "/verify", nil, church.Verify,
+    ).
+    Add(
+        "post", "/user", nil, church.CreateUser,
+    ).
+    Add(
+        "post", "/user/{id}/profile", nil, church.CreateUserProfile,
     )
     r.Run("/", 8000)
 }
