@@ -139,6 +139,6 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
     user.SetProfile(profile)
     return api.Response {
         Type: "Sucess",
-        Data: profile.Render(),
+        Data: profile,
     }, 200
 }
