@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+  mp "mime/multipart"
 	"github.com/Coff3e/Api"
 )
 
@@ -13,9 +14,9 @@ type User struct {
     ProfileId uint     `json:",empty"`
 }
 
-func (self *User) SetProfile(profile Image) {
+func (self *User) SetProfile(profile File) {
     {
-        tmp_profile := Image{}
+        tmp_profile := File{}
         e := db.First(&tmp_profile, "id = ?", self.ProfileId)
         if e.Error == nil {
             tmp_profile.Delete()
@@ -28,14 +29,14 @@ func (self *User) SetProfile(profile Image) {
     profile.Create()
 }
 
-func (self *User) GetProfile() Image {
-    profile := Image{}
+func (self *User) GetProfile() File {
+    profile := File{}
     e := db.First(&profile, "id = ?", self.ProfileId)
     if e.Error == nil {
         return profile
     }
 
-    return Image{}
+    return File{}
 }
 
 func (self *User) GetRoles() []Role {
@@ -109,5 +110,24 @@ func CreateUser(r api.Request) (api.Response, int) {
     return api.Response {
         Type: "Sucess",
         Data: user,
+    }, 200
+}
+
+func CreateUserProfile(r api.Request) (api.Response, int) {
+    if r.Data == nil {
+        return api.Response{
+            Type: "Error",
+            Message: "data is null",
+        }, 500
+    }
+
+    data := r.Data.(*mp.Form)
+
+    i := File {}
+    i.Load(data)
+
+    return api.Response {
+        Type: "Sucess",
+        Data: i.Render(),
     }, 200
 }
