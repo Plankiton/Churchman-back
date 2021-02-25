@@ -43,6 +43,11 @@ func CreateFakeDB() {
 
     person.Sign(maria)
 
+    photo := church.File{}
+    photo.AltText = "Image"
+    photo.LoadString("JOAO É GAY")
+
+    maria.SetProfile(photo)
     joao_login := church.Token{}
     joao_login.UserId = joao.ID
     joao_login.Create()

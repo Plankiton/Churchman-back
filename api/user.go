@@ -11,7 +11,7 @@ import (
 type User struct {
     api.User
     State   string   `json:"civil_state,omitempty" gorm:"default:sole"`
-    ProfileId uint     `json:",empty"`
+    ProfileId uint     `json:"-"`
 }
 
 func (self *User) SetProfile(profile File) {
@@ -29,7 +29,8 @@ func (self *User) SetProfile(profile File) {
 
 func (self *User) GetProfile() File {
     profile := File{}
-    e := db.First(&profile, "id = ?", self.ProfileId)
+    profile.ID = self.ProfileId
+    e := db.First(&profile)
     if e.Error == nil {
         return profile
     }
@@ -52,6 +53,24 @@ func (self *User) GetRoles() []Role {
     }
 
     return []Role{}
+}
+
+func GetUser(r api.Request) (api.Response, int) {
+    u := User {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("User not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    return api.Response {
+        Type: "Success",
+        Data: u,
+    }, 200
 }
 
 func CreateUser(r api.Request) (api.Response, int) {
@@ -145,4 +164,17 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
         Type: "Sucess",
         Data: profile,
     }, 200
+}
+
+func GetUserProfile(r api.Request) ([]byte, int) {
+    u := User {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("User not found")
+        api.Err(msg)
+        return []byte{}, 404
+    }
+    p := u.GetProfile()
+
+    return []byte(p.Render()), 200
 }
