@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"time"
 
+  "net/url"
+  sc "strconv"
   mp "mime/multipart"
+
 	"github.com/Coff3e/Api"
 )
 
@@ -238,4 +241,47 @@ func GetUserProfile(r api.Request) ([]byte, int) {
     p := u.GetProfile()
 
     return []byte(p.Render()), 200
+}
+
+func GetUserList(r api.Request) (api.Response, int) {
+    var limit, page int
+    var err error
+
+    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    if (err != nil) {}
+
+    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    if (err != nil) {}
+
+    user_list := []User{}
+    offset := (page - 1) * limit
+    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Find(&user_list)
+
+    if e.Error != nil {
+        api.SuperPut(e.Error)
+    }
+
+    query_response := []map[string]interface{}{}
+    for _, u := range user_list {
+        item := map[string]interface{}{}
+
+        p := u.GetProfile()
+
+        item["name"] = u.Name
+        item["id"] = u.ID
+
+        if p.ID != 0 {
+            item["profile"] = map[string]string{
+                "data": p.Render(),
+                "alt_text": p.AltText,
+            }
+        }
+
+        query_response = append(query_response, item)
+    }
+
+    return api.Response{
+        Type: "Sucess",
+        Data: query_response,
+    }, 200
 }
