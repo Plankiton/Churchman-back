@@ -130,6 +130,67 @@ func CreateUser(r api.Request) (api.Response, int) {
     }, 200
 }
 
+func UpdateUser(r api.Request) (api.Response, int) {
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("User create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    data := r.Data.(map[string]interface{})
+
+    user := User{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("User delete fail, user not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    api.MapTo(data, &user)
+    if _, e := data["born"];e {
+        born_time, _ := time.Parse(TimeLayout(), data["born"].(string))
+        user.Born = born_time
+    }
+
+    if _, e := data["pass"];e {
+        user.SetPass(data["pass"].(string))
+    }
+
+    user.Save()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: user,
+    }, 200
+}
+
+func DeleteUser(r api.Request) (api.Response, int) {
+    user := User{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("User delete fail, user not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    user.Delete()
+
+    return api.Response {
+        Type: "Sucess",
+        Message: "User deleted",
+    }, 200
+}
+
 func CreateUserProfile(r api.Request) (api.Response, int) {
     user := User{}
     res := db.First(&user, "id = ?", r.PathVars["id"])

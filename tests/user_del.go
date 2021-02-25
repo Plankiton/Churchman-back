@@ -53,10 +53,7 @@ func main() {
 
     r.
     Add(
-        "get", "/user/{id}", nil, church.GetUser,
-    ).
-    Add(
-        "get", "/user/{id}/profile", nil, church.GetUserProfile,
+        "delete", "/user/{id}", nil, church.DeleteUser,
     )
 
     go r.Run("/", 8000)
@@ -65,7 +62,9 @@ func main() {
 
     //body := new(bytes.Buffer)
     url := "http://localhost:8000/user/" + uid
-    res, err := http.Get(url)
+    req, err := http.NewRequest(http.MethodDelete, url, nil)
+    client := &http.Client{}
+    res, err := client.Do(req)
 
     // Creating User
     r_body := process(res, err)
