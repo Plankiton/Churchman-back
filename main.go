@@ -34,10 +34,19 @@ func main() {
         "post", "/verify", nil, church.Verify,
     ).
     Add(
+        "get", "/user/", nil, church.GetUserList,
+    ).
+    Add(
         "post", "/user", nil, church.CreateUser,
     ).
     Add(
         "post", "/user/{id}/profile", nil, church.CreateUserProfile,
+    ).
+    Add(
+        "get", "/user/{id}", nil, church.GetUser,
+    ).
+    Add(
+        "get", "/user/{id}/profile", nil, church.GetUserProfile,
     )
     r.Run("/", 8000)
 }

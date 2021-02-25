@@ -248,17 +248,30 @@ func GetUserList(r api.Request) (api.Response, int) {
     var err error
 
     limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {}
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"l\" is obrigatory and must be integer",
+        }, 400
+    }
 
     page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {}
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"p\" is obrigatory and must be integer",
+        }, 400
+    }
 
     user_list := []User{}
     offset := (page - 1) * limit
     e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Find(&user_list)
 
     if e.Error != nil {
-        api.SuperPut(e.Error)
+        return api.Response{
+            Type: "Error",
+            Message: "Error on creating of profile on database",
+        }, 500
     }
 
     query_response := []map[string]interface{}{}
