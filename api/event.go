@@ -1,12 +1,21 @@
 package church
 
 import (
-    "github.com/Coff3e/Api"
+    "fmt"
+
     "time"
+    "net/url"
+    sc "strconv"
+
+    "github.com/Coff3e/Api"
 )
 
 type UserEvent struct {
     api.UserGroup
+}
+
+func (model *UserEvent) TableName() string {
+    return "user_groups"
 }
 
 type Event struct {
@@ -14,18 +23,13 @@ type Event struct {
     Type       string       `json:"type,omitempty" gorm:"index"`
 
     AddrId     uint         `json:",empty" gorm:"index"`
-    Leader     uint         `json:",empty" gorm:"index"`
-    CoLeader   uint         `json:",empty" gorm:"index"`
     CoverId    uint         `json:",empty"`
 
     BeginAt    time.Time    `json:"begin,omitempty" gorm:"index"`
     EndAt      time.Time    `json:"end,omitempty" gorm:"index"`
 }
 
-func (self UserEvent) TableName() string {
-    return "user_groups"
-}
-func (self Event) TableName() string {
+func (model *Event) TableName() string {
     return "groups"
 }
 
@@ -94,6 +98,54 @@ func (self Event) Unsign(user User) (User, Event) {
     return user, self
 }
 
+func (self *Event) SetCover(cover File) {
+    {
+        tmp_cover := File{}
+        e := db.First(&tmp_cover, "id = ?", self.CoverId)
+        if e.Error == nil {
+            tmp_cover.Delete()
+        }
+    }
+
+    self.CoverId = cover.ID
+    self.Save()
+}
+
+func (self *Event) GetCover() File {
+    cover := File{}
+    cover.ID = self.CoverId
+    e := db.First(&cover)
+    if e.Error == nil {
+        return cover
+    }
+
+    return File{}
+}
+
+func (self *Event) SetAddress(addr File) {
+    {
+        tmp_addr := File{}
+        e := db.First(&tmp_addr, "id = ?", self.AddrId)
+        if e.Error == nil {
+            tmp_addr.Delete()
+        }
+    }
+
+    self.AddrId = addr.ID
+    self.Save()
+}
+
+func (self *Event) GetAddress() File {
+    addr := File{}
+    addr.ID = self.AddrId
+    e := db.First(&addr)
+    if e.Error == nil {
+        return addr
+    }
+
+    return File{}
+}
+
 func (self *Event) GetUsers(page int, limit int) []User {
     e := db.First(self)
     if e.Error == nil {
@@ -158,8 +210,20 @@ func CreateEvent(r api.Request) (api.Response, int) {
 
     data := r.Data.(map[string]interface{})
 
-    if _, e := data["name"]; !e {
-        msg := "Event create fail, Obrigatory field \"name\""
+    obrigatory_fields := []string{
+            "name", "begin", "end",
+        }
+    if (len(data)<len(obrigatory_fields)){
+        msg := "User create fail, Obrigatory field"
+        if (len(data)==4) {
+            msg += "s"
+        }
+        msg += " missing: "
+        for _, k := range obrigatory_fields {
+            if _, exist := data[k]; !exist {
+                msg += fmt.Sprintf(`"%s", `, k)
+            }
+        }
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -167,19 +231,16 @@ func CreateEvent(r api.Request) (api.Response, int) {
         }, 400
     }
 
-    res := db.First(&Event {}, "name = ?", data["name"])
-    if res.Error == nil {
-        msg := fmt.Sprint("Event create fail, event already registered")
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 500
-    }
-
     event := Event {}
 
     api.MapTo(data, &event)
+
+    begin_time, _ := time.Parse(TimeLayout(), data["begin"].(string))
+    end_time, _ := time.Parse(TimeLayout(), data["begin"].(string))
+
+    event.BeginAt = begin_time
+    event.EndAt = end_time
+
     event.Create()
 
     return api.Response {
