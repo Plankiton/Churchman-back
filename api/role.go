@@ -202,28 +202,16 @@ func DeleteRole(r api.Request) (api.Response, int) {
 
 func RoleUnsignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
+    res := db.First(&user, "id = ?", r.PathVars["uid"])
     if res.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Role not found",
+            Message: "User not found",
         }, 404
     }
 
-    if !validData(r.Data, generic_json_obj) {
-        msg := fmt.Sprint("Role create fail, data need to be a object")
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 400
-    }
-
-    data := r.Data.(map[string]interface{})
-
     role := Role{}
-    res = db.First(&role, "id = ?", data["id"])
-
+    res = db.First(&role, "id = ?", r.PathVars["rid"])
     if res.Error != nil {
         return api.Response{
             Type: "Error",
@@ -240,28 +228,16 @@ func RoleUnsignUser(r api.Request) (api.Response, int) {
 
 func RoleSignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
+    res := db.First(&user, "id = ?", r.PathVars["uid"])
     if res.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Role not found",
+            Message: "User not found",
         }, 404
     }
 
-    if !validData(r.Data, generic_json_obj) {
-        msg := fmt.Sprint("Role create fail, data need to be a object")
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 400
-    }
-
-    data := r.Data.(map[string]interface{})
-
     role := Role{}
-    res = db.First(&role, "id = ?", data["id"])
-
+    res = db.First(&role, "id = ?", r.PathVars["rid"])
     if res.Error != nil {
         return api.Response{
             Type: "Error",
