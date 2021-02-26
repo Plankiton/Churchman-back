@@ -52,6 +52,9 @@ func main() {
         "get", "/user/{id}/roles", nil, church.GetRoleListByUser,
     ).
     Add(
+        "get", "/user/{id}/celules", nil, church.GetCeluleListByUser,
+    ).
+    Add(
         "get", "/role/{id}", nil, church.GetRole,
     ).
     Add(
@@ -74,6 +77,30 @@ func main() {
     ).
     Add(
         "get", "/role/{id}/users", nil, church.GetUserListByRole,
+    ).
+    Add(
+        "get", "/celule/{id}", nil, church.GetCelule,
+    ).
+    Add(
+        "get", "/celule/", nil, church.GetCeluleList,
+    ).
+    Add(
+        "post", "/celule/", nil, church.CreateCelule,
+    ).
+    Add(
+        "post", "/celule/{id}", nil, church.UpdateCelule,
+    ).
+    Add(
+        "post", "/celule/{rid}/sign/{uid}", nil, church.CeluleSignUser,
+    ).
+    Add(
+        "post", "/celule/{rid}/unsign/{uid}", nil, church.CeluleUnsignUser,
+    ).
+    Add(
+        "delete", "/celule/{id}", nil, church.DeleteCelule,
+    ).
+    Add(
+        "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
     )
     r.Run("/", 8000)
 }

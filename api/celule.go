@@ -1,6 +1,11 @@
 package church
 
 import (
+    "fmt"
+
+    "net/url"
+    sc "strconv"
+
     "github.com/Coff3e/Api"
 )
 
@@ -89,12 +94,12 @@ func (self Celule) Unsign(user User) (User, Celule) {
     return user, self
 }
 
-func (self *Celule) GetUsers() []User {
+func (self *Celule) GetUsers(page int, limit int) []User {
     e := db.First(self)
     if e.Error == nil {
         user_list := []uint{}
         users := []User{}
-        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_groups ur INNER JOIN groups r ON ur.group_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Find(&user_list)
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_groups ur INNER JOIN groups r ON ur.group_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Offset((page-1)*limit).Limit(limit).Find(&user_list)
         if e.Error == nil {
             e := db.Find(&users, "id in ?", user_list)
             if e.Error == nil {
@@ -106,12 +111,12 @@ func (self *Celule) GetUsers() []User {
     return []User{}
 }
 
-func (self *User) GetCelules() []Celule {
+func (self *User) GetCelules(page int, limit int) []Celule {
     e := db.First(self)
     if e.Error == nil {
         celule_list := []uint{}
         celules := []Celule{}
-        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID).Find(&celule_list)
+        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID).Offset((page-1)*limit).Limit(limit).Find(&celule_list)
         if e.Error == nil {
             e := db.Find(&celules, "id in ?", celule_list)
             if e.Error == nil {
@@ -121,4 +126,279 @@ func (self *User) GetCelules() []Celule {
     }
 
     return []Celule{}
+}
+
+
+func GetCelule(r api.Request) (api.Response, int) {
+    u := Celule {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Celule not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    return api.Response {
+        Type: "Success",
+        Data: u,
+    }, 200
+}
+
+func CreateCelule(r api.Request) (api.Response, int) {
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    data := r.Data.(map[string]interface{})
+
+    if _, e := data["name"]; !e {
+        msg := "Celule create fail, Obrigatory field \"name\""
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    res := db.First(&Celule {}, "name = ?", data["name"])
+    if res.Error == nil {
+        msg := fmt.Sprint("Celule create fail, celule already registered")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 500
+    }
+
+    celule := Celule {}
+
+    api.MapTo(data, &celule)
+    celule.Create()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: celule,
+    }, 200
+}
+
+func UpdateCelule(r api.Request) (api.Response, int) {
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    data := r.Data.(map[string]interface{})
+
+    celule := Celule{}
+    res := db.First(&celule, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Celule update fail, celule not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    api.MapTo(data, &celule)
+    celule.Save()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: celule,
+    }, 200
+}
+
+func DeleteCelule(r api.Request) (api.Response, int) {
+    celule := Celule{}
+    res := db.First(&celule, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Celule delete fail, celule not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    celule.Delete()
+
+    return api.Response {
+        Type: "Sucess",
+        Message: "Celule deleted",
+    }, 200
+}
+
+func CeluleUnsignUser(r api.Request) (api.Response, int) {
+    user := User{}
+    res := db.First(&user, "id = ?", r.PathVars["uid"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "User not found",
+        }, 404
+    }
+
+    celule := Celule{}
+    res = db.First(&celule, "id = ?", r.PathVars["rid"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Celule not found",
+        }, 404
+    }
+
+    user, celule = celule.Unsign(user)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(user.Name, " Unsigned to ", celule.Name),
+    }, 200
+}
+
+func CeluleSignUser(r api.Request) (api.Response, int) {
+    user := User{}
+    res := db.First(&user, "id = ?", r.PathVars["uid"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "User not found",
+        }, 404
+    }
+
+    celule := Celule{}
+    res = db.First(&celule, "id = ?", r.PathVars["rid"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Celule not found",
+        }, 404
+    }
+
+    user, celule = celule.Sign(user)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(user.Name, " Signed to ", celule.Name),
+    }, 200
+}
+
+func GetUserListByCelule(r api.Request) (api.Response, int) {
+    var limit, page int
+    var err error
+
+    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"l\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"p\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    celule := Celule{}
+    if (db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "Celule not found",
+        }, 404
+    }
+
+    user_list := celule.GetUsers(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: user_list,
+    }, 200
+}
+
+
+func GetCeluleListByUser(r api.Request) (api.Response, int) {
+    var limit, page int
+    var err error
+
+    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"l\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"p\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    user := User{}
+    if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "User not found",
+        }, 404
+    }
+
+    celule_list := user.GetCelules(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: celule_list,
+    }, 200
+}
+
+func GetCeluleList(r api.Request) (api.Response, int) {
+    var limit, page int
+    var err error
+
+    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"l\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    if (err != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "The query variable \"p\" is obrigatory and must be integer",
+        }, 400
+    }
+
+    celule_list := []Celule{}
+    offset := (page - 1) * limit
+    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Find(&celule_list)
+
+    if e.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Error on creating of profile on database",
+        }, 500
+    }
+
+    return api.Response{
+        Type: "Sucess",
+        Data: celule_list,
+    }, 200
 }
