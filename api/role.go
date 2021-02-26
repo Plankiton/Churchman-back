@@ -273,7 +273,7 @@ func GetUserListByRole(r api.Request) (api.Response, int) {
     }
 
     role := Role{}
-    if (db.First(&role, "id = ?", r.PathVars["id"]) != nil) {
+    if (db.First(&role, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
             Message: "Role not found",
@@ -310,7 +310,7 @@ func GetRoleListByUser(r api.Request) (api.Response, int) {
     }
 
     user := User{}
-    if (db.First(&user, "id = ?", r.PathVars["id"]) != nil) {
+    if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
             Message: "User not found",
