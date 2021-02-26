@@ -1,2 +1,2 @@
 #!/bin/sh
-for f in `ls`;do [[ $f == "fake_db.go" || $f == "UnitTests" ]] && continue; DB_FILE_ROOT=/tmp go run ./fake_db.go $f && printf "$f: \033[32;1mOK\033[00m\n" || printf "$f: \033[31;1mERROR\033[00m\n" ;done 2> /dev/null
+for f in `ls *.go`;do [[ $f == "fake_db.go" ]] && continue; DB_FILE_ROOT=/tmp go run ./fake_db.go $f && printf "$f: \033[32;1mOK\033[00m\n" || printf "$f: \033[31;1mERROR\033[00m\n" ;done 2> /dev/null

@@ -6,7 +6,7 @@ import (
     "bytes"
     "os"
 
-    "../api"
+    "github.com/Coff3e/Church-app/api"
     "github.com/Coff3e/Api"
 )
 
@@ -18,21 +18,20 @@ func main() {
         os.Exit(1)
     }
 
-    r.
-    Add(
-        "post", "/role", nil, church.CreateRole,
+    CreateFakeDB()
+
+    r.Add(
+        "post", "/login", api.RouteConf {}, church.LogIn,
     )
     go r.Run("/", 8000)
 
-    url := "http://localhost:8000/role"
+    url := "http://localhost:8000/login"
     for _, d := range []interface{}{
+        map[string]string{"email": "maria@j.com", "pass": "maria"},
         map[string]string{"email": "maria@j.com", "pass": "joao"},
         []map[string]string{{"j": "j", "pass": "joao"}},
         []map[interface{}]string{{"j": "j", "pass": "joao"},{0:"joao"}},
-        map[string]string{"name": "chato"},
-        map[string]string{
-            "name": "professor",
-        },
+        map[string]string{"email": "maria@joao.com", "pass": "joao"},
     } {
 
         body := new(bytes.Buffer)
@@ -40,7 +39,7 @@ func main() {
             Data: d,
         })
         res, err := http.Post(url, "application/json", body)
-
         process(res, err)
+
     }
 }

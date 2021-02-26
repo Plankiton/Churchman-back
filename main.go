@@ -3,7 +3,7 @@ package main
 import (
     "os"
 
-    "./api"
+    "github.com/Coff3e/Church-app/api"
     "github.com/Coff3e/Api"
 )
 

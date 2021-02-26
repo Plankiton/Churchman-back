@@ -4,7 +4,7 @@ import (
     "time"
     "fmt"
 
-    "../api"
+    "github.com/Coff3e/Church-app/api"
     "github.com/Coff3e/Api"
 )
 

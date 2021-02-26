@@ -6,7 +6,7 @@ import (
     "bytes"
     "os"
 
-    "../api"
+    "github.com/Coff3e/Church-app/api"
     "github.com/Coff3e/Api"
 )
 
@@ -27,13 +27,13 @@ func main() {
     }
 
     r.Add(
-        "post", "/logout", api.RouteConf {
+        "post", "/verify", api.RouteConf {
             "need-auth": true,
-        }, church.LogOut,
+        }, church.Verify,
     )
     go r.Run("/", 8000)
 
-    url := "http://localhost:8000/logout"
+    url := "http://localhost:8000/verify"
     for _, t := range []interface{} {
         "8dadfa32800",
         0x8dadfa32800,
