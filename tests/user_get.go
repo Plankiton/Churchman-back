@@ -10,33 +10,6 @@ import (
     "github.com/Coff3e/Api"
 )
 
-func process(res *http.Response, err error) api.Response {
-    if err == nil {
-        r_body := api.Response{}
-        r_raw_body := new(bytes.Buffer)
-        r_raw_body.ReadFrom(res.Body)
-        if json.Unmarshal(r_raw_body.Bytes(), &r_body) == nil {
-            res.Body.Close()
-
-
-            if  r_body.Type == "Error" {
-                api.War("Sucessfull request with error\n\t-> Response:", r_raw_body)
-            } else {
-                api.Log("Sucessfull request\n\t-> Response:", r_raw_body)
-            }
-        } else {
-            api.Log("Sucessfull request\n\t-> Response:", r_raw_body)
-        }
-
-        return r_body
-
-    } else {
-        api.Err("Failure request sending, ", err)
-    }
-
-    return api.Response {}
-}
-
 func main() {
     con_str := ":memory:"
     r := church.Church{}

@@ -39,22 +39,7 @@ func main() {
             Data: d,
         })
         res, err := http.Post(url, "application/json", body)
-        if (err == nil){
-            r_body := api.Response{}
-            json.NewDecoder(res.Body).Decode(&r_body)
-            res.Body.Close()
-
-            r_raw_body := new(bytes.Buffer)
-            json.NewEncoder(r_raw_body).Encode(r_body)
-
-            if  r_body.Type == "Error" {
-                api.War("Sucessfull request with error\n\t-> Response:", r_raw_body)
-            } else {
-                api.Log("Sucessfull request\n\t-> Response:", r_raw_body)
-            }
-        } else {
-            api.Err("Failure request sending, ", err)
-        }
+        process(res, err)
 
     }
 }

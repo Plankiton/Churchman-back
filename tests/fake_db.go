@@ -73,3 +73,27 @@ func CreateUsers() {
         photo.LoadString("JOAO É GAY")
     }
 }
+
+func process(res *http.Response, err error) api.Response {
+    if err == nil {
+        r_body := api.Response{}
+        json.NewDecoder(res.Body).Decode(&r_body)
+        res.Body.Close()
+
+        r_raw_body := new(bytes.Buffer)
+        json.NewEncoder(r_raw_body).Encode(r_body)
+
+        if  r_body.Type == "Error" {
+            api.War("Sucessfull request with error\n\t-> Response:", r_raw_body)
+        } else {
+            api.Log("Sucessfull request\n\t-> Response:", r_raw_body)
+        }
+
+        return r_body
+
+    } else {
+        api.Err("Failure request sending, ", err)
+    }
+
+    return api.Response {}
+}
