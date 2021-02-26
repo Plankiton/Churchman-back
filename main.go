@@ -47,6 +47,33 @@ func main() {
     ).
     Add(
         "get", "/user/{id}/profile", nil, church.GetUserProfile,
+    ).
+    Add(
+        "get", "/user/{id}/roles", nil, church.GetRoleListByUser,
+    ).
+    Add(
+        "get", "/role/{id}", nil, church.GetRole,
+    ).
+    Add(
+        "get", "/role/", nil, church.GetRoleList,
+    ).
+    Add(
+        "post", "/role/", nil, church.CreateRole,
+    ).
+    Add(
+        "post", "/role/{id}", nil, church.UpdateRole,
+    ).
+    Add(
+        "post", "/role/{rid}/sign/{uid}", nil, church.RoleSignUser,
+    ).
+    Add(
+        "post", "/role/{rid}/unsign/{uid}", nil, church.RoleUnsignUser,
+    ).
+    Add(
+        "delete", "/role/{id}", nil, church.DeleteRole,
+    ).
+    Add(
+        "get", "/role/{id}/users", nil, church.GetUserListByRole,
     )
     r.Run("/", 8000)
 }
