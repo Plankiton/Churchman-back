@@ -187,7 +187,7 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
         }, 404
     }
 
-    if r.Data == nil || validData(r.Data, generic_form) {
+    if r.Data == nil || !validData(r.Data, generic_form) {
         return api.Response{
             Type: "Error",
             Message: "Data must be a multipart-form",
