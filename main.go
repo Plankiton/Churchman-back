@@ -21,6 +21,8 @@ func main() {
         os.Exit(1)
     }
     api.Log("Database connected with sucess")
+
+
     r.
     Add(
         "post", "/login", api.RouteConf {
@@ -33,6 +35,8 @@ func main() {
     Add(
         "post", "/verify", nil, church.Verify,
     ).
+
+
     Add(
         "get", "/user/", nil, church.GetUserList,
     ).
@@ -54,6 +58,12 @@ func main() {
     Add(
         "get", "/user/{id}/celules", nil, church.GetCeluleListByUser,
     ).
+    Add(
+        "get", "/user/{id}/events", nil, church.GetEventListByUser,
+    ).
+
+
+
     Add(
         "get", "/role/{id}", nil, church.GetRole,
     ).
@@ -78,6 +88,36 @@ func main() {
     Add(
         "get", "/role/{id}/users", nil, church.GetUserListByRole,
     ).
+
+
+
+    Add(
+        "get", "/event/{id}", nil, church.GetEvent,
+    ).
+    Add(
+        "get", "/event/", nil, church.GetEventList,
+    ).
+    Add(
+        "post", "/event/", nil, church.CreateEvent,
+    ).
+    Add(
+        "post", "/event/{id}", nil, church.UpdateEvent,
+    ).
+    Add(
+        "post", "/event/{rid}/sign/{uid}", nil, church.EventSignUser,
+    ).
+    Add(
+        "post", "/event/{rid}/unsign/{uid}", nil, church.EventUnsignUser,
+    ).
+    Add(
+        "delete", "/event/{id}", nil, church.DeleteEvent,
+    ).
+    Add(
+        "get", "/event/{id}/users", nil, church.GetUserListByEvent,
+    ).
+
+
+
     Add(
         "get", "/celule/{id}", nil, church.GetCelule,
     ).
@@ -102,5 +142,8 @@ func main() {
     Add(
         "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
     )
+
+
+
     r.Run("/", 8000)
 }
