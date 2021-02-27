@@ -1,9 +1,7 @@
 package main
 
 import (
-    "encoding/json"
     "net/http"
-    "bytes"
     "os"
 
     "github.com/Coff3e/Church-app/api"

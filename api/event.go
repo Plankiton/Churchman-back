@@ -11,26 +11,11 @@ import (
 )
 
 type UserEvent struct {
-    api.UserGroup
-}
-
-func (model *UserEvent) TableName() string {
-    return "user_groups"
+    api.UserEvent
 }
 
 type Event struct {
-    api.Group
-    Type       string       `json:"type,omitempty" gorm:"index"`
-
-    AddrId     uint         `json:",empty" gorm:"index"`
-    CoverId    uint         `json:",empty"`
-
-    BeginAt    time.Time    `json:"begin,omitempty" gorm:"index"`
-    EndAt      time.Time    `json:"end,omitempty" gorm:"index"`
-}
-
-func (model *Event) TableName() string {
-    return "groups"
+    api.Event
 }
 
 func (model *Event) Create() {
@@ -63,7 +48,7 @@ func (model *UserEvent) Create() {
 
 func (self UserEvent) Sign(user User, event Event) (User, Event) {
     self.UserId = user.ID
-    self.GroupId = event.ID
+    self.EventId = event.ID
 
     self.Create()
     api.Log("Linked", api.ToLabel(user.ID, user.ModelType), user.Name, "to", api.ToLabel(event.ID, event.ModelType), event.Name)
@@ -73,7 +58,7 @@ func (self UserEvent) Sign(user User, event Event) (User, Event) {
 
 func (self UserEvent) Unsign(user User, event Event) (User, Event) {
     self.UserId = user.ID
-    self.GroupId = event.ID
+    self.EventId = event.ID
 
     self.Delete()
     api.Log("Unlinked", api.ToLabel(user.ID, user.ModelType), user.Name, "from", api.ToLabel(event.ID, event.ModelType), event.Name)
@@ -90,7 +75,7 @@ func (self Event) Sign(user User) (User, Event) {
 
 func (self Event) Unsign(user User) (User, Event) {
     link := UserEvent{}
-    e := db.Where("user_id = ? AND group_id = ?", user.ID, self.ID).First(&link)
+    e := db.Where("user_id = ? AND event_id = ?", user.ID, self.ID).First(&link)
     if e.Error == nil {
         user, self = link.Unsign(user, self)
     }
@@ -151,7 +136,12 @@ func (self *Event) GetUsers(page int, limit int) []User {
     if e.Error == nil {
         user_list := []uint{}
         users := []User{}
-        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_groups ur INNER JOIN groups r ON ur.group_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID).Offset((page-1)*limit).Limit(limit).Find(&user_list)
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_events ur INNER JOIN events r ON ur.event_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&user_list)
+
         if e.Error == nil {
             e := db.Find(&users, "id in ?", user_list)
             if e.Error == nil {
@@ -168,7 +158,12 @@ func (self *User) GetEvents(page int, limit int) []Event {
     if e.Error == nil {
         event_list := []uint{}
         events := []Event{}
-        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID).Offset((page-1)*limit).Limit(limit).Find(&event_list)
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN user_events ur INNER JOIN users u ON ur.event_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&event_list)
+
         if e.Error == nil {
             e := db.Find(&events, "id in ?", event_list)
             if e.Error == nil {

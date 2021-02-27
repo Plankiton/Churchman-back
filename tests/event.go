@@ -41,14 +41,14 @@ func main() {
 
     api.Log("Trying to Get User list from Event")
     print("\tPoor users -> [ ")
-    for _, u := range event.GetUsers(1, 5) {
+    for _, u := range event.GetUsers(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")
 
     api.Log("Trying to get Event list from User")
     print("\t", user.Name, "-> [ ")
-    for _, u := range user.GetEvents(1, 5) {
+    for _, u := range user.GetEvents(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")

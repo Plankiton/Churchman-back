@@ -47,24 +47,24 @@ func main() {
 
     api.Log("Trying to get User list from Role")
     print("\tPerson users -> [ ")
-    for _, u := range person.GetUsers() {
+    for _, u := range person.GetUsers(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")
     print("\tPoor users -> [ ")
-    for _, u := range poor.GetUsers() {
+    for _, u := range poor.GetUsers(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")
 
     api.Log("Trying to get Role list from User")
     print("\t", user.Name, "-> [ ")
-    for _, u := range user.GetRoles() {
+    for _, u := range user.GetRoles(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")
     print("\t", null_user.Name, "-> [ ")
-    for _, u := range null_user.GetRoles() {
+    for _, u := range null_user.GetRoles(0, 0) {
         print(api.ToLabel(u.ID, u.ModelType), ", ")
     }
     print("]\n")

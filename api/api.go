@@ -30,16 +30,12 @@ func generic_json_array() reflect.Type {
 
 func generic_form() reflect.Type {
     var i mp.Form
-    return reflect.TypeOf(&i).Elem()
+    return reflect.TypeOf(i)
 }
 
 func validData(data interface{}, t func()reflect.Type) bool {
     if data == nil {
-        if t() == reflect.TypeOf(data) {
-            return true
-        } else {
-            return false
-        }
+        return false
     }
 
     if reflect.TypeOf(data).Kind() == t().Kind() {
