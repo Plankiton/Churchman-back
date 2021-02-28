@@ -25,6 +25,9 @@ func main() {
 
     r.
     Add(
+        "get", "/address/{cep}", nil, church.GetFromCEP,
+    ).
+    Add(
         "post", "/login", api.RouteConf {
             "need-auth": false,
         }, church.LogIn,
@@ -121,6 +124,14 @@ func main() {
     Add(
         "get", "/event/{id}/cover", nil, church.GetEventCover,
     ).
+    Add(
+        "post", "/event/{id}/address", nil, church.CreateEventAddr,
+    ).
+    Add(
+        "get", "/event/{id}/address", nil, church.GetEventAddr,
+    ).
+
+
 
     Add(
         "get", "/celule/{id}", nil, church.GetCelule,
@@ -145,8 +156,13 @@ func main() {
     ).
     Add(
         "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
+    ).
+    Add(
+        "post", "/celule/{id}/address", nil, church.CreateCeluleAddr,
+    ).
+    Add(
+        "get", "/celule/{id}/address", nil, church.GetCeluleAddr,
     )
-
 
     r.Run("/", 8000)
 }

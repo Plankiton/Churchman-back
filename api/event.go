@@ -507,3 +507,53 @@ func GetEventCover(r api.Request) ([]byte, int) {
 
     return []byte(p.Render()), 200
 }
+
+func CreateEventAddr(r api.Request) (api.Response, int) {
+    user := Event{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Event not found",
+        }, 404
+    }
+
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("Event create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    addr := Address{}
+    data := r.Data.(map[string]interface{})
+    api.MapTo(data, &addr)
+    addr.Create()
+
+    user.SetAddress(addr)
+    return api.Response {
+        Type: "Sucess",
+        Data: addr,
+    }, 200
+}
+
+func GetEventAddr(r api.Request) (api.Response, int) {
+    u := Event {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Event not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+    addr := u.GetAddress()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: addr,
+    }, 200
+}

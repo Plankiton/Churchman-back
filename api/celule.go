@@ -438,3 +438,53 @@ func GetCeluleList(r api.Request) (api.Response, int) {
         Data: celule_list,
     }, 200
 }
+
+func CreateCeluleAddr(r api.Request) (api.Response, int) {
+    user := Celule{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Celule not found",
+        }, 404
+    }
+
+    if !validData(r.Data, generic_json_obj) {
+        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    addr := Address{}
+    data := r.Data.(map[string]interface{})
+    api.MapTo(data, &addr)
+    addr.Create()
+
+    user.SetAddress(addr)
+    return api.Response {
+        Type: "Sucess",
+        Data: addr,
+    }, 200
+}
+
+func GetCeluleAddr(r api.Request) (api.Response, int) {
+    u := Celule {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Celule not found")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+    addr := u.GetAddress()
+
+    return api.Response {
+        Type: "Sucess",
+        Data: addr,
+    }, 200
+}
