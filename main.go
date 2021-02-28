@@ -115,8 +115,12 @@ func main() {
     Add(
         "get", "/event/{id}/users", nil, church.GetUserListByEvent,
     ).
-
-
+    Add(
+        "post", "/event/{id}/cover", nil, church.CreateEventCover,
+    ).
+    Add(
+        "get", "/event/{id}/cover", nil, church.GetEventCover,
+    ).
 
     Add(
         "get", "/celule/{id}", nil, church.GetCelule,
@@ -142,7 +146,6 @@ func main() {
     Add(
         "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
     )
-
 
 
     r.Run("/", 8000)

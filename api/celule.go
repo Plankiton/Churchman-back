@@ -94,6 +94,32 @@ func (self Celule) Unsign(user User) (User, Celule) {
     return user, self
 }
 
+func (self *Celule) SetAddress(addr Address) {
+    {
+        tmp_addr := Address{}
+        e := db.First(&tmp_addr, "id = ?", self.AddrId)
+        if e.Error == nil {
+            tmp_addr.Delete()
+        }
+    }
+
+    self.AddrId = addr.ID
+    self.Save()
+}
+
+func (self *Celule) GetAddress() Address {
+    addr := Address{}
+    addr.ID = self.AddrId
+    e := db.First(&addr)
+    if e.Error == nil {
+        return addr
+    }
+
+    return Address{}
+}
+
+
+
 func (self *Celule) GetUsers(page int, limit int) []User {
     e := db.First(self)
     if e.Error == nil {

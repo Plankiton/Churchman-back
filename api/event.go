@@ -5,6 +5,7 @@ import (
 
     "time"
     "net/url"
+    mp "mime/multipart"
     sc "strconv"
 
     "github.com/Coff3e/Api"
@@ -107,7 +108,7 @@ func (self *Event) GetCover() File {
     return File{}
 }
 
-func (self *Event) SetAddress(addr File) {
+func (self *Event) SetAddress(addr Address) {
     {
         tmp_addr := File{}
         e := db.First(&tmp_addr, "id = ?", self.AddrId)
@@ -120,15 +121,15 @@ func (self *Event) SetAddress(addr File) {
     self.Save()
 }
 
-func (self *Event) GetAddress() File {
-    addr := File{}
+func (self *Event) GetAddress() Address {
+    addr := Address{}
     addr.ID = self.AddrId
     e := db.First(&addr)
     if e.Error == nil {
         return addr
     }
 
-    return File{}
+    return Address{}
 }
 
 func (self *Event) GetUsers(page int, limit int) []User {
@@ -456,4 +457,53 @@ func GetEventList(r api.Request) (api.Response, int) {
         Type: "Sucess",
         Data: event_list,
     }, 200
+}
+
+func CreateEventCover(r api.Request) (api.Response, int) {
+    user := Event{}
+    res := db.First(&user, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Event not found",
+        }, 404
+    }
+
+    if r.Data == nil || !validData(r.Data, generic_form) {
+        return api.Response{
+            Type: "Error",
+            Message: "Data must be a multipart-form",
+        }, 400
+    }
+
+    data := r.Data.(*mp.Form)
+
+    cover := File {}
+    cover.Load(data)
+
+    if db.First(&cover).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Error on creating of cover on database",
+        }, 500
+    }
+
+    user.SetCover(cover)
+    return api.Response {
+        Type: "Sucess",
+        Data: cover,
+    }, 200
+}
+
+func GetEventCover(r api.Request) ([]byte, int) {
+    u := Event {}
+    res := db.First(&u, "id = ?", r.PathVars["id"])
+    if res.Error != nil {
+        msg := fmt.Sprint("Event not found")
+        api.Err(msg)
+        return []byte{}, 404
+    }
+    p := u.GetCover()
+
+    return []byte(p.Render()), 200
 }
