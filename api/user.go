@@ -24,10 +24,14 @@ func (self *User) SetProfile(profile File) {
         if e.Error == nil {
             tmp_profile.Delete()
         }
+
+        e = db.First(&tmp_profile, "filename = ? OR id = ?", profile.Filename, profile.ID)
+        if e.Error != nil {
+            tmp_profile.Create()
+        }
     }
 
-    self.ProfileId = profile.ID
-    self.Save()
+    self.Update(api.Dict { "profile_id": profile.ID })
 }
 
 func (self *User) GetProfile() File {
