@@ -162,6 +162,24 @@ func main() {
     ).
     Add(
         "get", "/celule/{id}/address", nil, church.GetCeluleAddr,
+    ).
+    Add(
+        "post", "/celule/{id}/co-leader", nil, church.CeluleSetCoLeader,
+    ).
+    Add(
+        "get", "/celule/{id}/co-leader", nil, church.CeluleGetCoLeader,
+    ).
+    Add(
+        "post", "/celule/{id}/leader", nil, church.CeluleSetLeader,
+    ).
+    Add(
+        "get", "/celule/{id}/leader", nil, church.CeluleGetLeader,
+    ).
+    Add(
+        "post", "/celule/{id}/parent", nil, church.CeluleSetParent,
+    ).
+    Add(
+        "get", "/celule/{id}/parent", nil, church.CeluleGetParent,
     )
 
     r.Run("/", 8000)
