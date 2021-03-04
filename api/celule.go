@@ -12,10 +12,10 @@ type Celule struct {
     api.Group
     Type       string `json:"type,omitempty" gorm:"index"`
     IID        uint   `json:"internal_id,-" gorm:"index,column:internal_id"`
-    Parent     uint   `json:"parent,-" gorm:"index"`
-    Addr       uint   `json:"address,-" gorm:"index"`
-    Leader     uint   `json:"leader,-" gorm:"index"`
-    CoLeader   uint   `json:"co_leader,-" gorm:"index,column:co_leader"`
+    Parent     uint   `json:"parent_id,-" gorm:"index"`
+    Addr       uint   `json:"address_id,-" gorm:"index"`
+    Leader     uint   `json:"leader_id,-" gorm:"index"`
+    CoLeader   uint   `json:"co_leader_id,-" gorm:"index,column:co_leader"`
 }
 
 func (self UserCelule) TableName() string {
@@ -28,12 +28,16 @@ func (self Celule) TableName() string {
 func (model *Celule) Create() {
     model.ModelType = "Celule"
     last := Celule{}
-    db.Order("internal_id").Last(&last, "parent = ?", model.Parent)
+    db.Order("created_at desc").Last(&last, "parent = ?", model.Parent)
     model.IID = last.IID+1
 
     if api.ModelCreate(model) == nil {
         ID := model.ID
         ModelType := model.ModelType
+
+        model.Name = GetCeluleName(*model)
+        api.ModelSave(model)
+
         api.Log("Created", api.ToLabel(ID, ModelType))
     }
 }

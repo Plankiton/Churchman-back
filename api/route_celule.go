@@ -1,12 +1,12 @@
 package church
 
 import (
-    "fmt"
+	"fmt"
 
-    "net/url"
-    sc "strconv"
+	"net/url"
+	sc "strconv"
 
-    "github.com/Coff3e/Api"
+	"github.com/Coff3e/Api"
 )
 
 func GetCelule(r api.Request) (api.Response, int) {
@@ -38,17 +38,31 @@ func CreateCelule(r api.Request) (api.Response, int) {
     }
 
     data := r.Data.(map[string]interface{})
+    required := []string{
+        "leader_id",
+    }
+
+    if (len(data)<len(required)){
+        msg := "User create fail, Obrigatory field"
+        if (len(data)==len(required)-1) {
+            msg += "s"
+        }
+        msg += " missing: "
+        for _, k := range required {
+            if _, exist := data[k]; !exist {
+                msg += fmt.Sprintf(`"%s", `, k)
+            }
+        }
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
 
     celule := Celule {}
     api.MapTo(data, &celule)
     celule.Create()
-
-    /*
-    celule.Name = GetCeluleName(celule)
-    api.SuperPut(celule.Name)
-    */
-    celule.Save()
-
     return api.Response {
         Type: "Sucess",
         Data: celule,

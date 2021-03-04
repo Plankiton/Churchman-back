@@ -19,6 +19,9 @@ func main() {
     api.Log("Database connected with sucess")
 
     api.Log("Trying to create User on database")
+    g12 := church.Role{}
+    g12.Create()
+
     user := church.User{}
     user.ModelType = "User"
     user.Name = "Joao da Silva"
@@ -27,13 +30,14 @@ func main() {
     user.Genre = "M"
     user.State = "sole"
     user.Born = time.Now()
-
     user.Create()
+
     _ = db.First(&user)
+    g12.Sign(user)
 
     api.Log("Trying to create Celule on database")
     celule := church.Celule{}
-    celule.Name = "Anjos da morte"
+    celule.Leader = user.ID
     celule.Create()
 
     api.Log("Trying to Sign User to Celule")
@@ -56,4 +60,20 @@ func main() {
     api.Log("Trying to Unsign User to Celule")
     celule.Unsign(user)
 
+    api.SuperPut(celule.Name)
+
+    celule_child := church.Celule{}
+    celule_child.Leader = user.ID
+    celule_child.Parent = celule.ID
+    celule_child.Create()
+
+    celule_child2 := church.Celule{}
+    celule_child2.Leader = user.ID
+    celule_child2.Parent = celule.ID
+    celule_child2.Create()
+
+    celule_child3 := church.Celule{}
+    celule_child3.Leader = user.ID
+    celule_child3.Parent = celule_child2.ID
+    celule_child3.Create()
 }
