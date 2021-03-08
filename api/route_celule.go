@@ -323,23 +323,9 @@ func CeluleSignUser(r api.Request) (api.Response, int) {
 
 func GetUserListByCelule(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     celule := Celule{}
     if (db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil) {
@@ -360,23 +346,9 @@ func GetUserListByCelule(r api.Request) (api.Response, int) {
 
 func GetCeluleListByUser(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     user := User{}
     if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
@@ -396,23 +368,9 @@ func GetCeluleListByUser(r api.Request) (api.Response, int) {
 
 func GetCeluleList(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     celule_list := []Celule{}
     offset := (page - 1) * limit

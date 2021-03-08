@@ -174,23 +174,9 @@ func RoleSignUser(r api.Request) (api.Response, int) {
 
 func GetUserListByRole(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     role := Role{}
     if (db.First(&role, "id = ?", r.PathVars["id"]).Error != nil) {
@@ -211,23 +197,9 @@ func GetUserListByRole(r api.Request) (api.Response, int) {
 
 func GetRoleListByUser(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     user := User{}
     if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
@@ -247,23 +219,9 @@ func GetRoleListByUser(r api.Request) (api.Response, int) {
 
 func GetRoleList(r api.Request) (api.Response, int) {
     var limit, page int
-    var err error
 
-    limit, err = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"l\" is obrigatory and must be integer",
-        }, 400
-    }
-
-    page, err = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-    if (err != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "The query variable \"p\" is obrigatory and must be integer",
-        }, 400
-    }
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     role_list := []Role{}
     offset := (page - 1) * limit

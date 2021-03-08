@@ -182,3 +182,50 @@ func (self *User) GetCelules(page int, limit int) []Celule {
 
     return []Celule{}
 }
+
+func (self *Celule) QueryUsers(page int, limit int, query ...interface{}) []User {
+    e := db.First(self)
+    if e.Error == nil {
+        user_list := []uint{}
+        users := []User{}
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_groups ur INNER JOIN groups r ON ur.group_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+
+        e = e.Find(&user_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&users, "id in ?", user_list)
+            if e.Error == nil {
+                return users
+            }
+        }
+    }
+
+    return []User{}
+}
+
+
+func (self *User) QueryCelules(page int, limit int, query...interface{}) []Celule {
+    e := db.First(self)
+    if e.Error == nil {
+        celule_list := []uint{}
+        celules := []Celule{}
+        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.celule_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&celule_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&celules, "id in ?", celule_list)
+            if e.Error == nil {
+                return celules
+            }
+        }
+    }
+
+    return []Celule{}
+}
+

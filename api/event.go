@@ -169,3 +169,48 @@ func (self *User) GetEvents(page int, limit int) []Event {
     return []Event{}
 }
 
+func (self *Event) QueryUsers(page int, limit int, query ...interface{}) []User {
+    e := db.First(self)
+    if e.Error == nil {
+        user_list := []uint{}
+        users := []User{}
+        e := db.Raw("SELECT u.id FROM users u INNER JOIN user_events ur INNER JOIN events r ON ur.event_id = r.id AND ur.user_id = u.id AND r.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+
+        e = e.Find(&user_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&users, "id in ?", user_list)
+            if e.Error == nil {
+                return users
+            }
+        }
+    }
+
+    return []User{}
+}
+
+
+func (self *User) QueryEvents(page int, limit int, query...interface{}) []Event {
+    e := db.First(self)
+    if e.Error == nil {
+        event_list := []uint{}
+        events := []Event{}
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN user_events ur INNER JOIN users u ON ur.event_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&event_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&events, "id in ?", event_list)
+            if e.Error == nil {
+                return events
+            }
+        }
+    }
+
+    return []Event{}
+}
