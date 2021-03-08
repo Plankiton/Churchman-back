@@ -1,6 +1,7 @@
 package church
 import (
     "github.com/Coff3e/Api"
+    "time"
     "fmt"
 )
 
@@ -28,19 +29,20 @@ func LogIn(r api.Request) (api.Response, int) {
             Type:    "Error",
         }, 404
     }
+    if _, ok := data["pass"];ok {
+        if user.CheckPass(data["pass"].(string)) {
+            token := Token {}
+            token.UserId = user.ID
+            token.Create()
 
-    if user.CheckPass(data["pass"].(string)) {
-        token := Token {}
-        token.UserId = user.ID
-        token.Create()
-
-        return api.Response {
-            Type: "Sucess",
-            Data: map[string]interface{} {
-                "token": token.ID,
-                "user": user,
-            },
-        }, 200
+            return api.Response {
+                Type: "Sucess",
+                Data: map[string]interface{} {
+                    "token": token.ID,
+                    "user": user,
+                },
+            }, 200
+        }
     }
 
     msg := fmt.Sprint("Authentication fail, password from <", user.Name, ":", user.ID,"> is wrong, permission denied")
@@ -54,20 +56,17 @@ func LogIn(r api.Request) (api.Response, int) {
 func Verify(r api.Request) (api.Response, int) {
     token := Token {}
     token.ID = r.Token
-
-    user := User {}
-    user.ID = token.UserId
-
-
-    db.First(&token)
-    res := db.First(&user)
-    if res.Error == nil {
+    _, ok := token.GetUser()
+    if ok {
         msg := fmt.Sprint("Token \"", r.Token, "\" Is valid")
         api.Log(msg)
-        return api.Response {
+        res := api.Response {
             Type: "Sucess",
             Message: msg,
-        }, 200
+        }
+
+        res.AddCookie("token", r.Token, time.Hour*24*360*10)
+        return res, 200
     }
 
     msg := fmt.Sprint("Authentication fail, user not found, permission denied")

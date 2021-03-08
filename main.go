@@ -13,11 +13,14 @@ func main() {
 
     var err error
     if os.Getenv("DEBUG_MODE") == "true" {
+        api.Log("Entering on Debug mode, using sqlite database")
         _, err = r.SignDB("/tmp/debug.db", api.Sqlite)
     } else {
+        api.Log("Trying to connect to postgresql")
         _, err = r.SignDB(con_str, api.Postgres)
     }
     if (err != nil) {
+        api.Err("Database is dowm")
         os.Exit(1)
     }
     api.Log("Database connected with sucess")
@@ -33,10 +36,12 @@ func main() {
         }, church.LogIn,
     ).
     Add(
-        "post", "/logout", nil, church.LogOut,
+        "post", "/verify", api.RouteConf {
+            "need-auth": false,
+        }, church.Verify,
     ).
     Add(
-        "post", "/verify", nil, church.Verify,
+        "post", "/logout", nil, church.LogOut,
     ).
 
 

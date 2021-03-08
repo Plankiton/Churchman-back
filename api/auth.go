@@ -9,6 +9,19 @@ type Token struct {
     api.Token
 }
 
+func (token *Token) GetUser() (User, bool) {
+    ok := false
+    user := User{}
+    if (token.Verify()) {
+        db.First(&token)
+        if db.First(&user, "id = ?", token.UserId).Error == nil {
+            ok = true
+        }
+    }
+
+    return user, ok
+}
+
 func (model *Token) Create() {
     model.ModelType = api.GetModelType(model)
 
