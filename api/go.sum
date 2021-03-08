@@ -1,6 +1,6 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/Coff3e/Api v0.1.0 h1:Wp2pMDTKkkXO3gJw2rkZmj7k4oUHh4RND8V6VJzvbxM=
-github.com/Coff3e/Api v0.1.0/go.mod h1:DebJIWmjff9Gbxkszb5f+xFGCQDAucajy7tnhErDc5s=
+github.com/Coff3e/Api v0.1.1 h1:EmOJVo9CLq2NrrxRfXRNPeg2EfZDeUeZOUtuDn9Ew8o=
+github.com/Coff3e/Api v0.1.1/go.mod h1:DebJIWmjff9Gbxkszb5f+xFGCQDAucajy7tnhErDc5s=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=
