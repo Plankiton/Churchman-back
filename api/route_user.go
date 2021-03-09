@@ -24,7 +24,7 @@ func GetUser(r api.Request) (api.Response, int) {
 
     token := Token{}
     token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || CheckPermissions(curr, u) {
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, u) {
         msg := "Authentication fail, permission denied"
         api.Err(msg)
         return api.Response {
@@ -71,8 +71,7 @@ func CreateUser(r api.Request) (api.Response, int) {
         }, 400
     }
 
-    res := db.First(&User {}, "email = ?", data["email"])
-    if res.Error == nil {
+    if db.First(&User {}, "email = ?", data["email"]).Error == nil {
         msg := fmt.Sprint("User create fail, user already registered")
         api.Err(msg)
         return api.Response {
@@ -109,15 +108,26 @@ func UpdateUser(r api.Request) (api.Response, int) {
     data := r.Data.(map[string]interface{})
 
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
-        msg := fmt.Sprint("User delete fail, user not found")
+    if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
+        msg := fmt.Sprint("User update fail, user not found")
         api.Err(msg)
         return api.Response {
             Message: msg,
             Type:    "Error",
         }, 404
     }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
 
     api.MapTo(data, &user)
     if _, e := data["born"];e {
@@ -139,8 +149,7 @@ func UpdateUser(r api.Request) (api.Response, int) {
 
 func DeleteUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("User delete fail, user not found")
         api.Err(msg)
         return api.Response {
@@ -148,6 +157,18 @@ func DeleteUser(r api.Request) (api.Response, int) {
             Type:    "Error",
         }, 404
     }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
 
     user.Delete()
 
@@ -159,12 +180,22 @@ func DeleteUser(r api.Request) (api.Response, int) {
 
 func CreateUserProfile(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "User not found",
         }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
     }
 
     if r.Data == nil || !api.ValidateData(r.Data, api.GenericForm) {
@@ -195,20 +226,39 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
 
 func GetUserProfile(r api.Request) ([]byte, int) {
     u := User {}
-    res := db.First(&u, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("User not found")
         api.Err(msg)
         return []byte{}, 404
     }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, u) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return []byte{}, 405
+    }
+
+
     p := u.GetProfile()
 
     return []byte(p.Render()), 200
 }
 
 func GetUserList(r api.Request) (api.Response, int) {
-    var limit, page int
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
 
+    var limit, page int
     limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
     page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 

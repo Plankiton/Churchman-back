@@ -20,8 +20,7 @@ func LogIn(r api.Request) (api.Response, int) {
 
     user := User {}
 
-    res := db.First(&user, "email = ?", data["email"])
-    if res.Error != nil {
+    if db.First(&user, "email = ?", data["email"]).Error != nil {
         msg := fmt.Sprint("Authentication fail, no users with \"", data["email"], "\" registered")
         api.Err(msg)
         return api.Response {
@@ -56,8 +55,7 @@ func LogIn(r api.Request) (api.Response, int) {
 func Verify(r api.Request) (api.Response, int) {
     token := Token {}
     token.ID = r.Token
-    _, ok := token.GetUser()
-    if ok {
+    if _, ok := token.GetUser(); ok {
         msg := fmt.Sprint("Token \"", r.Token, "\" Is valid")
         api.Log(msg)
         res := api.Response {

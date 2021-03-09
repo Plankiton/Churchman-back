@@ -11,8 +11,7 @@ import (
 
 func GetCelule(r api.Request) (api.Response, int) {
     u := Celule {}
-    res := db.First(&u, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Celule not found")
         api.Err(msg)
         return api.Response {
@@ -28,6 +27,17 @@ func GetCelule(r api.Request) (api.Response, int) {
 }
 
 func CreateCelule(r api.Request) (api.Response, int) {
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
         msg := fmt.Sprint("Celule create fail, data need to be a object")
         api.Err(msg)
@@ -82,8 +92,7 @@ func UpdateCelule(r api.Request) (api.Response, int) {
     data := r.Data.(map[string]interface{})
 
     celule := Celule{}
-    res := db.First(&celule, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Celule update fail, celule not found")
         api.Err(msg)
         return api.Response {
@@ -107,8 +116,7 @@ func UpdateCelule(r api.Request) (api.Response, int) {
 
 func DeleteCelule(r api.Request) (api.Response, int) {
     celule := Celule{}
-    res := db.First(&celule, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Celule delete fail, celule not found")
         api.Err(msg)
         return api.Response {
@@ -271,8 +279,7 @@ func CeluleGetParent(r api.Request) (api.Response, int) {
 
 func CeluleUnsignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["uid"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "User not found",
@@ -280,8 +287,7 @@ func CeluleUnsignUser(r api.Request) (api.Response, int) {
     }
 
     celule := Celule{}
-    res = db.First(&celule, "id = ?", r.PathVars["rid"])
-    if res.Error != nil {
+    if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Celule not found",
@@ -297,8 +303,7 @@ func CeluleUnsignUser(r api.Request) (api.Response, int) {
 
 func CeluleSignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["uid"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "User not found",
@@ -306,12 +311,22 @@ func CeluleSignUser(r api.Request) (api.Response, int) {
     }
 
     celule := Celule{}
-    res = db.First(&celule, "id = ?", r.PathVars["rid"])
-    if res.Error != nil {
+    if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Celule not found",
         }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
     }
 
     user, celule = celule.Sign(user)
@@ -333,6 +348,17 @@ func GetUserListByCelule(r api.Request) (api.Response, int) {
             Type: "Error",
             Message: "Celule not found",
         }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
     }
 
     user_list := celule.GetUsers(page, limit)
@@ -358,6 +384,17 @@ func GetCeluleListByUser(r api.Request) (api.Response, int) {
         }, 404
     }
 
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
     celule_list := user.GetCelules(page, limit)
 
     return api.Response{
@@ -367,6 +404,17 @@ func GetCeluleListByUser(r api.Request) (api.Response, int) {
 }
 
 func GetCeluleList(r api.Request) (api.Response, int) {
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
     var limit, page int
 
     limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
@@ -390,13 +438,23 @@ func GetCeluleList(r api.Request) (api.Response, int) {
 }
 
 func CreateCeluleAddr(r api.Request) (api.Response, int) {
-    user := Celule{}
-    res := db.First(&user, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    celule := Celule{}
+    if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Celule not found",
         }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
     }
 
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
@@ -413,7 +471,7 @@ func CreateCeluleAddr(r api.Request) (api.Response, int) {
     api.MapTo(data, &addr)
     addr.Create()
 
-    user.SetAddress(addr)
+    celule.SetAddress(addr)
     return api.Response {
         Type: "Sucess",
         Data: addr,
@@ -422,8 +480,7 @@ func CreateCeluleAddr(r api.Request) (api.Response, int) {
 
 func GetCeluleAddr(r api.Request) (api.Response, int) {
     u := Celule {}
-    res := db.First(&u, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Celule not found")
         api.Err(msg)
         return api.Response {

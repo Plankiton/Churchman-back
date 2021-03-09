@@ -10,8 +10,7 @@ import (
 
 func GetRole(r api.Request) (api.Response, int) {
     u := Role {}
-    res := db.First(&u, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Role not found")
         api.Err(msg)
         return api.Response {
@@ -47,8 +46,7 @@ func CreateRole(r api.Request) (api.Response, int) {
         }, 400
     }
 
-    res := db.First(&Role {}, "name = ?", data["name"])
-    if res.Error == nil {
+    if db.First(&Role {}, "name = ?", data["name"]).Error == nil {
         msg := fmt.Sprint("Role create fail, role already registered")
         api.Err(msg)
         return api.Response {
@@ -81,8 +79,7 @@ func UpdateRole(r api.Request) (api.Response, int) {
     data := r.Data.(map[string]interface{})
 
     role := Role{}
-    res := db.First(&role, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Role update fail, role not found")
         api.Err(msg)
         return api.Response {
@@ -102,8 +99,7 @@ func UpdateRole(r api.Request) (api.Response, int) {
 
 func DeleteRole(r api.Request) (api.Response, int) {
     role := Role{}
-    res := db.First(&role, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("Role delete fail, role not found")
         api.Err(msg)
         return api.Response {
@@ -122,8 +118,7 @@ func DeleteRole(r api.Request) (api.Response, int) {
 
 func RoleUnsignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["uid"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "User not found",
@@ -131,8 +126,7 @@ func RoleUnsignUser(r api.Request) (api.Response, int) {
     }
 
     role := Role{}
-    res = db.First(&role, "id = ?", r.PathVars["rid"])
-    if res.Error != nil {
+    if db.First(&role, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Role not found",
@@ -148,8 +142,7 @@ func RoleUnsignUser(r api.Request) (api.Response, int) {
 
 func RoleSignUser(r api.Request) (api.Response, int) {
     user := User{}
-    res := db.First(&user, "id = ?", r.PathVars["uid"])
-    if res.Error != nil {
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "User not found",
@@ -157,8 +150,7 @@ func RoleSignUser(r api.Request) (api.Response, int) {
     }
 
     role := Role{}
-    res = db.First(&role, "id = ?", r.PathVars["rid"])
-    if res.Error != nil {
+    if db.First(&role, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Role not found",
@@ -173,18 +165,29 @@ func RoleSignUser(r api.Request) (api.Response, int) {
 }
 
 func GetUserListByRole(r api.Request) (api.Response, int) {
-    var limit, page int
-
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-
     role := Role{}
-    if (db.First(&role, "id = ?", r.PathVars["id"]).Error != nil) {
+    if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
             Message: "Role not found",
         }, 404
     }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, role) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     user_list := role.GetUsers(page, limit)
 
@@ -196,11 +199,6 @@ func GetUserListByRole(r api.Request) (api.Response, int) {
 
 
 func GetRoleListByUser(r api.Request) (api.Response, int) {
-    var limit, page int
-
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-
     user := User{}
     if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
@@ -208,6 +206,22 @@ func GetRoleListByUser(r api.Request) (api.Response, int) {
             Message: "User not found",
         }, 404
     }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
     role_list := user.GetRoles(page, limit)
 
@@ -218,6 +232,17 @@ func GetRoleListByUser(r api.Request) (api.Response, int) {
 }
 
 func GetRoleList(r api.Request) (api.Response, int) {
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
     var limit, page int
 
     limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
