@@ -13,8 +13,8 @@ func (token *Token) GetUser() (User, bool) {
     ok := false
     user := User{}
     if (token.Verify()) {
-        db.First(&token)
-        if db.First(&user, "id = ?", token.UserId).Error == nil {
+        if db.First(token, "id = ?", token.ID).Error == nil &&
+        db.First(&user, "id = ?", token.UserId).Error == nil {
             ok = true
         }
     }
@@ -28,18 +28,16 @@ func (model *Token) Create() {
     user := User{}
     user.ID = model.UserId
 
-    e := db.First(&user)
-    if e.Error == nil {
+    if db.First(&user).Error == nil {
         var order int64
         db.Find(model).Count(&order)
 
+        model.UserId = user.ID
         model.ID = api.ToHash(fmt.Sprintf(
             "%d;%d;%s;%s;%s", order, user.ID, user.Name, user.Email, user.Phone,
         ))
 
-        db.Create(model)
-        e = db.First(model)
-        if e.Error == nil {
+        if api.ModelCreate(model) == nil {
             ID := model.ID
             ModelType := model.ModelType
             api.Log("Created", api.ToLabel(ID, ModelType))

@@ -13,14 +13,24 @@ import (
 
 func GetUser(r api.Request) (api.Response, int) {
     u := User {}
-    res := db.First(&u, "id = ?", r.PathVars["id"])
-    if res.Error != nil {
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
         msg := fmt.Sprint("User not found")
         api.Err(msg)
         return api.Response {
             Message: msg,
             Type:    "Error",
         }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || CheckPermissions(curr, u) {
+        msg := "Authentication fail, permission denied"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
     }
 
     return api.Response {
