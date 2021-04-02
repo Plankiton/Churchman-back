@@ -49,7 +49,9 @@ func main() {
         "get", "/user/", nil, church.GetUserList,
     ).
     Add(
-        "post", "/user", nil, church.CreateUser,
+        "post", "/user", api.RouteConf {
+            "need-auth": false,
+        }, church.CreateUser,
     ).
     Add(
         "post", "/user/{id}/profile", nil, church.CreateUserProfile,
