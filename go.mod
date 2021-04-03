@@ -1,4 +1,4 @@
-module github.com/Coff3e/Church-app/api
+module github.com/Coff3e/Church-app
 
 go 1.16
 

@@ -8,4 +8,4 @@ EXPOSE 8000
 
 WORKDIR /api
 
-CMD ./church
+CMD ./tmp/main

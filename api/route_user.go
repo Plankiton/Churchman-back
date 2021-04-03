@@ -51,15 +51,17 @@ func CreateUser(r api.Request) (api.Response, int) {
 
     data := r.Data.(map[string]interface{})
 
-    if (len(data)<5){
+    needed := []string{
+            "email", "pass",
+        }
+    neededs := len(needed)
+    if (len(data) < neededs){
         msg := "User create fail, Obrigatory field"
-        if (len(data)==4) {
+        if (len(data) == neededs - 1) {
             msg += "s"
         }
         msg += " missing: "
-        for _, k := range []string{
-            "email", "name", "pass", "born", "genre",
-        } {
+        for _, k := range needed {
             if _, exist := data[k]; !exist {
                 msg += fmt.Sprintf(`"%s", `, k)
             }
@@ -83,9 +85,11 @@ func CreateUser(r api.Request) (api.Response, int) {
     user := User {}
 
     api.MapTo(data, &user)
-    born_time, _ := time.Parse(TimeLayout(), data["born"].(string))
+    if _, ok := data["born"].(string); ok {
+        born_time, _ := time.Parse(TimeLayout(), data["born"].(string))
+        user.Born = born_time
+    }
 
-    user.Born = born_time
     user.SetPass(data["pass"].(string))
     user.Create()
 
