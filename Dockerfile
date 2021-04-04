@@ -8,4 +8,4 @@ EXPOSE 8000
 
 WORKDIR /api
 
-CMD ./tmp/main
+CMD ./tmp/main >> out.log 2>> out.log

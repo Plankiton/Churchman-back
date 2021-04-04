@@ -1,7 +1,6 @@
 package church
 import (
     "github.com/Coff3e/Api"
-    "time"
     "fmt"
 )
 
@@ -55,16 +54,11 @@ func LogIn(r api.Request) (api.Response, int) {
 func Verify(r api.Request) (api.Response, int) {
     token := Token {}
     token.ID = r.Token
-    if _, ok := token.GetUser(); ok {
-        msg := fmt.Sprint("Token \"", r.Token, "\" Is valid")
-        api.Log(msg)
-        res := api.Response {
+    if u, ok := token.GetUser(); ok {
+        return api.Response {
             Type: "Sucess",
-            Message: msg,
-        }
-
-        res.AddCookie("token", r.Token, time.Hour*24*360*10)
-        return res, 200
+            Data: u,
+        }, 200
     }
 
     msg := fmt.Sprint("Authentication fail, user not found, permission denied")

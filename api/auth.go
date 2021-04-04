@@ -12,11 +12,9 @@ type Token struct {
 func (token *Token) GetUser() (User, bool) {
     ok := false
     user := User{}
-    if (token.Verify()) {
-        if db.First(token, "id = ?", token.ID).Error == nil &&
-        db.First(&user, "id = ?", token.UserId).Error == nil {
-            ok = true
-        }
+    if db.First(token, "id = ?", token.ID).Error == nil &&
+    db.First(&user, "id = ?", token.UserId).Error == nil {
+        ok = true
     }
 
     return user, ok

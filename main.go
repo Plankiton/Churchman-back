@@ -36,9 +36,7 @@ func main() {
         }, church.LogIn,
     ).
     Add(
-        "post", "/verify", api.RouteConf {
-            "need-auth": false,
-        }, church.Verify,
+        "post", "/verify", nil, church.Verify,
     ).
     Add(
         "post", "/logout", nil, church.LogOut,
@@ -58,6 +56,9 @@ func main() {
     ).
     Add(
         "get", "/user/{id}", nil, church.GetUser,
+    ).
+    Add(
+        "post", "/user/{id}", nil, church.UpdateUser,
     ).
     Add(
         "get", "/user/{id}/profile", nil, church.GetUserProfile,
