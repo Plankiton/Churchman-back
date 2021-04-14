@@ -14,7 +14,7 @@ import (
 func GetUser(r api.Request) (api.Response, int) {
     u := User {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("User not found")
+        msg := fmt.Sprint("Fiel não encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -25,7 +25,7 @@ func GetUser(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, u) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -41,7 +41,7 @@ func GetUser(r api.Request) (api.Response, int) {
 
 func CreateUser(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("User create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -56,11 +56,15 @@ func CreateUser(r api.Request) (api.Response, int) {
         }
     neededs := len(needed)
     if (len(data) < neededs){
-        msg := "User create fail, Obrigatory field"
-        if (len(data) == neededs - 1) {
+        msg := "Campo"
+        if (len(data)<neededs-1) {
             msg += "s"
         }
-        msg += " missing: "
+        msg += " obrigatorio"
+        if (len(data)<neededs-1) {
+            msg += "s"
+        }
+        msg += ": "
         for _, k := range needed {
             if _, exist := data[k]; !exist {
                 msg += fmt.Sprintf(`"%s", `, k)
@@ -74,7 +78,7 @@ func CreateUser(r api.Request) (api.Response, int) {
     }
 
     if db.First(&User {}, "email = ?", data["email"]).Error == nil {
-        msg := fmt.Sprint("User create fail, user already registered")
+        msg := fmt.Sprintf("Email já está em uso")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -101,7 +105,7 @@ func CreateUser(r api.Request) (api.Response, int) {
 
 func UpdateUser(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("User create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -113,7 +117,7 @@ func UpdateUser(r api.Request) (api.Response, int) {
 
     user := User{}
     if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("User update fail, user not found")
+        msg := fmt.Sprintf("Fiel não encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -124,7 +128,7 @@ func UpdateUser(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -154,7 +158,7 @@ func UpdateUser(r api.Request) (api.Response, int) {
 func DeleteUser(r api.Request) (api.Response, int) {
     user := User{}
     if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("User delete fail, user not found")
+        msg := fmt.Sprintf("Fiel não encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -165,7 +169,7 @@ func DeleteUser(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -187,14 +191,14 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -217,7 +221,7 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
     if db.First(&profile).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of profile on database",
+            Message: "Erro interno desconhecido",
         }, 500
     }
 
@@ -231,7 +235,7 @@ func CreateUserProfile(r api.Request) (api.Response, int) {
 func GetUserProfile(r api.Request) ([]byte, int) {
     u := User {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("User not found")
+        msg := fmt.Sprint("Fiel não encontrado")
         api.Err(msg)
         return []byte{}, 404
     }
@@ -239,7 +243,7 @@ func GetUserProfile(r api.Request) ([]byte, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, u) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return []byte{}, 405
     }
@@ -254,7 +258,7 @@ func GetUserList(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -273,7 +277,7 @@ func GetUserList(r api.Request) (api.Response, int) {
     if e.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of profile on database",
+            Message: "Erro interno desconhecido",
         }, 500
     }
 

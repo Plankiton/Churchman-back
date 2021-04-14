@@ -9,7 +9,7 @@ func LogIn(r api.Request) (api.Response, int) {
     if api.ValidateData(r.Data, api.GenericJsonObj) {
         data = r.Data.(map[string]interface{})
     } else {
-        msg := fmt.Sprint("Authentication fail, bad request, data need to be a object")
+        msg := fmt.Sprint("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -20,7 +20,7 @@ func LogIn(r api.Request) (api.Response, int) {
     user := User {}
 
     if db.First(&user, "email = ?", data["email"]).Error != nil {
-        msg := fmt.Sprint("Authentication fail, no users with \"", data["email"], "\" registered")
+        msg := fmt.Sprint("O email \"", data["email"], "\" já está em uso")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -43,7 +43,7 @@ func LogIn(r api.Request) (api.Response, int) {
         }
     }
 
-    msg := fmt.Sprint("Authentication fail, password from <", user.Name, ":", user.ID,"> is wrong, permission denied")
+    msg := fmt.Sprint("Senha está errada")
     api.Err(msg)
     return api.Response {
         Message: msg,
@@ -61,7 +61,7 @@ func Verify(r api.Request) (api.Response, int) {
         }, 200
     }
 
-    msg := fmt.Sprint("Authentication fail, user not found, permission denied")
+    msg := fmt.Sprint("Fiel não existe")
     api.Err(msg)
     token.Delete()
     return api.Response {
@@ -77,7 +77,7 @@ func LogOut(r api.Request) (api.Response, int) {
     db.First(&token)
     token.Delete()
 
-    msg := fmt.Sprint("Token \"", r.Token, "\" removed")
+    msg := fmt.Sprint("Dispositivo excluido com sucesso")
     api.Log(msg)
     return api.Response {
         Type: "Sucess",

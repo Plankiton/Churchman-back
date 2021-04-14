@@ -12,7 +12,7 @@ import (
 func GetCelule(r api.Request) (api.Response, int) {
     u := Celule {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Celule not found")
+        msg := fmt.Sprint("Celula não encontrada")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -30,7 +30,7 @@ func CreateCelule(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -39,7 +39,7 @@ func CreateCelule(r api.Request) (api.Response, int) {
     }
 
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        msg := fmt.Sprint("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -48,17 +48,22 @@ func CreateCelule(r api.Request) (api.Response, int) {
     }
 
     data := r.Data.(map[string]interface{})
-    required := []string{
+    neededs := []string{
         "leader_id",
     }
 
-    if (len(data)<len(required)){
-        msg := "User create fail, Obrigatory field"
-        if (len(data)==len(required)-1) {
+    if (len(data)<len(neededs)){
+        msg := "Campo"
+        if (len(data)<len(neededs)-1) {
             msg += "s"
         }
-        msg += " missing: "
-        for _, k := range required {
+        msg += " obrigatorio"
+        if (len(data)<len(neededs)-1) {
+            msg += "s"
+        }
+        msg += ": "
+
+        for _, k := range neededs {
             if _, exist := data[k]; !exist {
                 msg += fmt.Sprintf(`"%s", `, k)
             }
@@ -81,7 +86,7 @@ func CreateCelule(r api.Request) (api.Response, int) {
 
 func UpdateCelule(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        msg := fmt.Sprint("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -93,7 +98,7 @@ func UpdateCelule(r api.Request) (api.Response, int) {
 
     celule := Celule{}
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Celule update fail, celule not found")
+        msg := fmt.Sprint("Celula não encontrada")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -117,7 +122,7 @@ func UpdateCelule(r api.Request) (api.Response, int) {
 func DeleteCelule(r api.Request) (api.Response, int) {
     celule := Celule{}
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Celule delete fail, celule not found")
+        msg := fmt.Sprint("Celula não encontrada")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -129,7 +134,7 @@ func DeleteCelule(r api.Request) (api.Response, int) {
 
     return api.Response {
         Type: "Sucess",
-        Message: "Celule deleted",
+        Message: "Celula deleted",
     }, 200
 }
 
@@ -138,7 +143,7 @@ func CeluleSetCoLeader(r api.Request) (api.Response, int) {
     if db.First(&co_leader, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Usuário não encontrado",
         }, 404
     }
 
@@ -146,7 +151,7 @@ func CeluleSetCoLeader(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
@@ -165,14 +170,14 @@ func CeluleGetCoLeader(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
     if db.First(&co_leader, "id = ?", celule.CoLeader).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "CoLeader not found",
+            Message: "Timóteo não encontrado",
         }, 404
     }
     return api.Response {
@@ -186,7 +191,7 @@ func CeluleSetLeader(r api.Request) (api.Response, int) {
     if db.First(&leader, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Usuário não encontrado",
         }, 404
     }
 
@@ -194,7 +199,7 @@ func CeluleSetLeader(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
@@ -213,14 +218,14 @@ func CeluleGetLeader(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
     if db.First(&leader, "id = ?", celule.Leader).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Leader not found",
+            Message: "Líder não encontrado",
         }, 404
     }
     return api.Response {
@@ -234,7 +239,7 @@ func CeluleSetParent(r api.Request) (api.Response, int) {
     if db.First(&parent, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula superior não encontrada",
         }, 404
     }
 
@@ -242,7 +247,7 @@ func CeluleSetParent(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
@@ -261,14 +266,14 @@ func CeluleGetParent(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não encontrada",
         }, 404
     }
 
     if db.First(&parent, "id = ?", celule.Parent).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Parent not found",
+            Message: "Celula Superior não encontrada",
         }, 404
     }
     return api.Response {
@@ -282,7 +287,7 @@ func CeluleUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
@@ -290,7 +295,7 @@ func CeluleUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não foi encontrado",
         }, 404
     }
 
@@ -306,7 +311,7 @@ func CeluleSignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
@@ -314,14 +319,14 @@ func CeluleSignUser(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -346,14 +351,14 @@ func GetUserListByCelule(r api.Request) (api.Response, int) {
     if (db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -380,14 +385,14 @@ func GetCeluleListByUser(r api.Request) (api.Response, int) {
     if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -407,7 +412,7 @@ func GetCeluleList(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -442,14 +447,14 @@ func CreateCeluleAddr(r api.Request) (api.Response, int) {
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Celule not found",
+            Message: "Celula não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -458,7 +463,7 @@ func CreateCeluleAddr(r api.Request) (api.Response, int) {
     }
 
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Celule create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -481,7 +486,7 @@ func CreateCeluleAddr(r api.Request) (api.Response, int) {
 func GetCeluleAddr(r api.Request) (api.Response, int) {
     u := Celule {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Celule not found")
+        msg := fmt.Sprint("Celula não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,

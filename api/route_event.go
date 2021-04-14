@@ -14,7 +14,7 @@ import (
 func GetEvent(r api.Request) (api.Response, int) {
     u := Event {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Event not found")
+        msg := fmt.Sprint("Evento não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -30,7 +30,7 @@ func GetEvent(r api.Request) (api.Response, int) {
 
 func CreateEvent(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Event create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -41,7 +41,7 @@ func CreateEvent(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -51,16 +51,20 @@ func CreateEvent(r api.Request) (api.Response, int) {
 
     data := r.Data.(map[string]interface{})
 
-    obrigatory_fields := []string{
+    neededs := []string{
             "name", "begin", "end",
         }
-    if (len(data)<len(obrigatory_fields)){
-        msg := "User create fail, Obrigatory field"
-        if (len(data)==4) {
+    if (len(data)<len(neededs)){
+        msg := "Campo"
+        if (len(data)<len(neededs)-1) {
             msg += "s"
         }
-        msg += " missing: "
-        for _, k := range obrigatory_fields {
+        msg += " obrigatorio"
+        if (len(data)<len(neededs)-1) {
+            msg += "s"
+        }
+        msg += ": "
+        for _, k := range neededs {
             if _, exist := data[k]; !exist {
                 msg += fmt.Sprintf(`"%s", `, k)
             }
@@ -92,7 +96,7 @@ func CreateEvent(r api.Request) (api.Response, int) {
 
 func UpdateEvent(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Event create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -104,7 +108,7 @@ func UpdateEvent(r api.Request) (api.Response, int) {
 
     event := Event{}
     if db.First(&event, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Event update fail, event not found")
+        msg := fmt.Sprintf("Evento não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -115,7 +119,7 @@ func UpdateEvent(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -135,7 +139,7 @@ func UpdateEvent(r api.Request) (api.Response, int) {
 func DeleteEvent(r api.Request) (api.Response, int) {
     event := Event{}
     if db.First(&event, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Event delete fail, event not found")
+        msg := fmt.Sprintf("Evento não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -146,7 +150,7 @@ func DeleteEvent(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -158,7 +162,7 @@ func DeleteEvent(r api.Request) (api.Response, int) {
 
     return api.Response {
         Type: "Sucess",
-        Message: "Event deleted",
+        Message: "Evento deleted",
     }, 200
 }
 
@@ -167,14 +171,14 @@ func EventUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -186,7 +190,7 @@ func EventUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Event not found",
+            Message: "Evento não foi encontrado",
         }, 404
     }
 
@@ -202,14 +206,14 @@ func EventSignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -221,7 +225,7 @@ func EventSignUser(r api.Request) (api.Response, int) {
     if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Event not found",
+            Message: "Evento não foi encontrado",
         }, 404
     }
 
@@ -236,7 +240,7 @@ func GetUserListByEvent(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -253,7 +257,7 @@ func GetUserListByEvent(r api.Request) (api.Response, int) {
     if (db.First(&event, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
-            Message: "Event not found",
+            Message: "Evento não foi encontrado",
         }, 404
     }
 
@@ -276,14 +280,14 @@ func GetEventListByUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -312,7 +316,7 @@ func GetEventList(r api.Request) (api.Response, int) {
     if e.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of profile on database",
+            Message: "Erro interno desconhecido",
         }, 500
     }
 
@@ -327,14 +331,14 @@ func CreateEventCover(r api.Request) (api.Response, int) {
     if db.First(&event, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Event not found",
+            Message: "Evento não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, event) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -357,7 +361,7 @@ func CreateEventCover(r api.Request) (api.Response, int) {
     if db.First(&cover).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of cover on database",
+            Message: "Erro interno desconhecido",
         }, 500
     }
 
@@ -371,7 +375,7 @@ func CreateEventCover(r api.Request) (api.Response, int) {
 func GetEventCover(r api.Request) ([]byte, int) {
     u := Event {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Event not found")
+        msg := fmt.Sprint("Evento não foi encontrado")
         api.Err(msg)
         return []byte{}, 404
     }
@@ -385,14 +389,14 @@ func CreateEventAddr(r api.Request) (api.Response, int) {
     if db.First(&event, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Event not found",
+            Message: "Evento não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, event) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -401,7 +405,7 @@ func CreateEventAddr(r api.Request) (api.Response, int) {
     }
 
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Event create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -424,7 +428,7 @@ func CreateEventAddr(r api.Request) (api.Response, int) {
 func GetEventAddr(r api.Request) (api.Response, int) {
     u := Event {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Event not found")
+        msg := fmt.Sprint("Evento não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,

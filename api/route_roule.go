@@ -11,7 +11,7 @@ import (
 func GetRole(r api.Request) (api.Response, int) {
     u := Role {}
     if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Role not found")
+        msg := fmt.Sprint("Cargo não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -27,7 +27,7 @@ func GetRole(r api.Request) (api.Response, int) {
 
 func CreateRole(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Role create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -38,7 +38,7 @@ func CreateRole(r api.Request) (api.Response, int) {
     data := r.Data.(map[string]interface{})
 
     if _, e := data["name"]; !e {
-        msg := "Role create fail, Obrigatory field \"name\""
+        msg := "Cargo create fail, Obrigatory field \"name\""
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -47,7 +47,7 @@ func CreateRole(r api.Request) (api.Response, int) {
     }
 
     if db.First(&Role {}, "name = ?", data["name"]).Error == nil {
-        msg := fmt.Sprint("Role create fail, role already registered")
+        msg := fmt.Sprintf("Cargo já existe")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -68,7 +68,7 @@ func CreateRole(r api.Request) (api.Response, int) {
 
 func UpdateRole(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
-        msg := fmt.Sprint("Role create fail, data need to be a object")
+        msg := fmt.Sprintf("Dados enviados são inválidos")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -80,7 +80,7 @@ func UpdateRole(r api.Request) (api.Response, int) {
 
     role := Role{}
     if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Role update fail, role not found")
+        msg := fmt.Sprintf("Cargo não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -100,7 +100,7 @@ func UpdateRole(r api.Request) (api.Response, int) {
 func DeleteRole(r api.Request) (api.Response, int) {
     role := Role{}
     if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
-        msg := fmt.Sprint("Role delete fail, role not found")
+        msg := fmt.Sprintf("Cargo não foi encontrado")
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -112,7 +112,7 @@ func DeleteRole(r api.Request) (api.Response, int) {
 
     return api.Response {
         Type: "Sucess",
-        Message: "Role deleted",
+        Message: "Cargo deleted",
     }, 200
 }
 
@@ -121,7 +121,7 @@ func RoleUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
@@ -129,7 +129,7 @@ func RoleUnsignUser(r api.Request) (api.Response, int) {
     if db.First(&role, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Role not found",
+            Message: "Cargo não foi encontrado",
         }, 404
     }
 
@@ -145,7 +145,7 @@ func RoleSignUser(r api.Request) (api.Response, int) {
     if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
@@ -153,7 +153,7 @@ func RoleSignUser(r api.Request) (api.Response, int) {
     if db.First(&role, "id = ?", r.PathVars["rid"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Role not found",
+            Message: "Cargo não foi encontrado",
         }, 404
     }
 
@@ -169,14 +169,14 @@ func GetUserListByRole(r api.Request) (api.Response, int) {
     if db.First(&role, "id = ?", r.PathVars["id"]).Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Role not found",
+            Message: "Cargo não foi encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, role) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -203,14 +203,14 @@ func GetRoleListByUser(r api.Request) (api.Response, int) {
     if (db.First(&user, "id = ?", r.PathVars["id"]).Error != nil) {
         return api.Response{
             Type: "Error",
-            Message: "User not found",
+            Message: "Fiel não encontrado",
         }, 404
     }
 
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -235,7 +235,7 @@ func GetRoleList(r api.Request) (api.Response, int) {
     token := Token{}
     token.ID = r.Token
     if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Authentication fail, permission denied"
+        msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
@@ -255,7 +255,7 @@ func GetRoleList(r api.Request) (api.Response, int) {
     if e.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of profile on database",
+            Message: "Erro interno desconhecido",
         }, 500
     }
 
