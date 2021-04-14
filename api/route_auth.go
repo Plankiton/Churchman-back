@@ -20,7 +20,7 @@ func LogIn(r api.Request) (api.Response, int) {
     user := User {}
 
     if db.First(&user, "email = ?", data["email"]).Error != nil {
-        msg := fmt.Sprint("O email \"", data["email"], "\" já está em uso")
+        msg := fmt.Sprint("Não existe usuário com esse email")
         api.Err(msg)
         return api.Response {
             Message: msg,
