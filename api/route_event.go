@@ -166,143 +166,6 @@ func DeleteEvent(r api.Request) (api.Response, int) {
     }, 200
 }
 
-func EventUnsignUser(r api.Request) (api.Response, int) {
-    user := User{}
-    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
-        return api.Response{
-            Type: "Error",
-            Message: "Fiel não encontrado",
-        }, 404
-    }
-
-    token := Token{}
-    token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Você não tem permissão para acessar isso"
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 405
-    }
-
-    event := Event{}
-    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
-        return api.Response{
-            Type: "Error",
-            Message: "Evento não foi encontrado",
-        }, 404
-    }
-
-    user, event = event.Unsign(user)
-    return api.Response {
-        Type: "Sucess",
-        Message: fmt.Sprint(user.Name, " Unsigned to ", event.Name),
-    }, 200
-}
-
-func EventSignUser(r api.Request) (api.Response, int) {
-    user := User{}
-    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
-        return api.Response{
-            Type: "Error",
-            Message: "Fiel não encontrado",
-        }, 404
-    }
-
-    token := Token{}
-    token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Você não tem permissão para acessar isso"
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 405
-    }
-
-    event := Event{}
-    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
-        return api.Response{
-            Type: "Error",
-            Message: "Evento não foi encontrado",
-        }, 404
-    }
-
-    user, event = event.Sign(user)
-    return api.Response {
-        Type: "Sucess",
-        Message: fmt.Sprint(user.Name, " Signed to ", event.Name),
-    }, 200
-}
-
-func GetUserListByEvent(r api.Request) (api.Response, int) {
-    token := Token{}
-    token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
-        msg := "Você não tem permissão para acessar isso"
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 405
-    }
-
-    var limit, page int
-
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-
-    event := Event{}
-    if (db.First(&event, "id = ?", r.PathVars["id"]).Error != nil) {
-        return api.Response{
-            Type: "Error",
-            Message: "Evento não foi encontrado",
-        }, 404
-    }
-
-    user_list := event.GetUsers(page, limit)
-
-    return api.Response{
-        Type: "Sucess",
-        Data: user_list,
-    }, 200
-}
-
-
-func GetEventListByUser(r api.Request) (api.Response, int) {
-    var limit, page int
-
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
-
-    user := User{}
-    if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
-        return api.Response{
-            Type: "Error",
-            Message: "Fiel não encontrado",
-        }, 404
-    }
-
-    token := Token{}
-    token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
-        msg := "Você não tem permissão para acessar isso"
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 405
-    }
-
-    event_list := user.GetEvents(page, limit)
-
-    return api.Response{
-        Type: "Sucess",
-        Data: event_list,
-    }, 200
-}
-
 func GetEventList(r api.Request) (api.Response, int) {
     var limit, page int
 
@@ -440,5 +303,142 @@ func GetEventAddr(r api.Request) (api.Response, int) {
     return api.Response {
         Type: "Sucess",
         Data: addr,
+    }, 200
+}
+
+func EventUnsignUser(r api.Request) (api.Response, int) {
+    user := User{}
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event := Event{}
+    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    user, event = event.Unsign(user)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(user.Name, " Unsigned to ", event.Name),
+    }, 200
+}
+
+func EventSignUser(r api.Request) (api.Response, int) {
+    user := User{}
+    if db.First(&user, "id = ?", r.PathVars["uid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event := Event{}
+    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    user, event = event.Sign(user)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(user.Name, " Signed to ", event.Name),
+    }, 200
+}
+
+func GetUserListByEvent(r api.Request) (api.Response, int) {
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+
+    event := Event{}
+    if (db.First(&event, "id = ?", r.PathVars["id"]).Error != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    user_list := event.GetUsers(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: user_list,
+    }, 200
+}
+
+
+func GetEventListByUser(r api.Request) (api.Response, int) {
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+
+    user := User{}
+    if db.First(&user, "id = ?", r.PathVars["id"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, user) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event_list := user.GetEvents(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: event_list,
     }, 200
 }
