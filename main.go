@@ -3,6 +3,7 @@ package main
 import (
     "os"
 
+    "gorm.io/gorm"
     "github.com/Coff3e/Church-app/api"
     "github.com/Coff3e/Api"
 )
@@ -11,13 +12,14 @@ func main() {
     con_str := "host=localhost user=plankiton password=joaojoao dbname=church port=5432 sslmode=disable TimeZone=America/Araguaina"
     r := church.Church{}
 
+    var db *gorm.DB
     var err error
     if os.Getenv("DEBUG_MODE") == "true" {
         api.Log("Entering on Debug mode, using sqlite database")
-        _, err = r.SignDB("/tmp/debug.db", api.Sqlite)
+        db, err = r.SignDB("/tmp/debug.db", api.Sqlite)
     } else {
         api.Log("Trying to connect to postgresql")
-        _, err = r.SignDB(con_str, api.Postgres)
+        db, err = r.SignDB(con_str, api.Postgres)
     }
     if (err != nil) {
         api.Err("Database is dowm")
@@ -25,6 +27,18 @@ func main() {
     }
     api.Log("Database connected with sucess")
 
+    if db.First(&church.Role{}).Error != nil {
+        pastor := church.Role{}
+        pastor.Name = "Pastor"
+        pastor.Create()
+
+        root := church.User{}
+        root.Email = "root@joao.com"
+        root.SetPass("joao")
+        root.Create()
+
+        pastor.Sign(root)
+    }
 
     r.
     Add(
@@ -172,19 +186,19 @@ func main() {
         "get", "/celule/{id}/address", nil, church.GetCeluleAddr,
     ).
     Add(
-        "post", "/celule/{id}/co-leader", nil, church.CeluleSetCoLeader,
+        "post", "/celule/{id}/co-leader/{uid}", nil, church.CeluleSetCoLeader,
     ).
     Add(
         "get", "/celule/{id}/co-leader", nil, church.CeluleGetCoLeader,
     ).
     Add(
-        "post", "/celule/{id}/leader", nil, church.CeluleSetLeader,
+        "post", "/celule/{id}/leader/{uid}", nil, church.CeluleSetLeader,
     ).
     Add(
         "get", "/celule/{id}/leader", nil, church.CeluleGetLeader,
     ).
     Add(
-        "post", "/celule/{id}/parent", nil, church.CeluleSetParent,
+        "post", "/celule/{id}/parent/{uid}", nil, church.CeluleSetParent,
     ).
     Add(
         "get", "/celule/{id}/parent", nil, church.CeluleGetParent,

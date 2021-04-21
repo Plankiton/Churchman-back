@@ -8,8 +8,22 @@ type UserEvent struct {
     api.UserEvent
 }
 
+type CeluleEvent struct {
+    api.Model
+
+    CeluleId   uint
+    EventId    uint
+}
+
+func (model *CeluleEvent) TableName() string {
+    return "celule_groups"
+}
+
 type Event struct {
     api.Event
+    Periodic    string `json:"periodic,omitempty"`
+    WeeklyDay   uint   `json:"weekly_day,omitempty"`
+    MonthlyDay  uint   `json:"monthly_day,omitempty"`
 }
 
 func (model *Event) Create() {
@@ -199,6 +213,196 @@ func (self *User) QueryEvents(page int, limit int, query...interface{}) []Event 
         event_list := []uint{}
         events := []Event{}
         e := db.Raw("SELECT r.id FROM events r INNER JOIN user_events ur INNER JOIN users u ON ur.event_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&event_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&events, "id in ?", event_list)
+            if e.Error == nil {
+                return events
+            }
+        }
+    }
+
+    return []Event{}
+}
+
+
+func (model *CeluleEvent) Create() {
+    model.ModelType = "CeluleEvent"
+
+    db.Create(model)
+
+    e := db.First(model)
+    if e.Error == nil {
+
+        ID := model.ID
+        ModelType := model.ModelType
+        api.Log("Created", api.ToLabel(ID, ModelType))
+    }
+}
+
+func (self CeluleEvent) Sign(celule Celule, event Event) (Celule, Event) {
+    self.CeluleId = celule.ID
+    self.EventId = event.ID
+
+    self.Create()
+    api.Log("Linked", api.ToLabel(celule.ID, celule.ModelType), celule.Name, "to", api.ToLabel(event.ID, event.ModelType), event.Name)
+
+    return celule, event
+}
+
+func (self CeluleEvent) Unsign(celule Celule, event Event) (Celule, Event) {
+    self.CeluleId = celule.ID
+    self.EventId = event.ID
+
+    self.Delete()
+    api.Log("Unlinked", api.ToLabel(celule.ID, celule.ModelType), celule.Name, "from", api.ToLabel(event.ID, event.ModelType), event.Name)
+
+    return celule, event
+}
+
+func (self Event) Sign(celule Celule) (Celule, Event) {
+    link := CeluleEvent{}
+    celule, self = link.Sign(celule, self)
+
+    return celule, self
+}
+
+func (self Event) Unsign(celule Celule) (Celule, Event) {
+    link := CeluleEvent{}
+    e := db.Where("celule_id = ? AND event_id = ?", celule.ID, self.ID).First(&link)
+    if e.Error == nil {
+        celule, self = link.Unsign(celule, self)
+    }
+
+    return celule, self
+}
+
+func (self *Event) SetCover(cover File) {
+    {
+        tmp_cover := File{}
+        e := db.First(&tmp_cover, "id = ?", self.CoverId)
+        if e.Error == nil {
+            tmp_cover.Delete()
+        }
+    }
+
+    self.CoverId = cover.ID
+    self.Save()
+}
+
+func (self *Event) GetCover() File {
+    cover := File{}
+    cover.ID = self.CoverId
+    e := db.First(&cover)
+    if e.Error == nil {
+        return cover
+    }
+
+    return File{}
+}
+
+func (self *Event) SetAddress(addr Address) {
+    {
+        tmp_addr := File{}
+        e := db.First(&tmp_addr, "id = ?", self.AddrId)
+        if e.Error == nil {
+            tmp_addr.Delete()
+        }
+    }
+
+    self.AddrId = addr.ID
+    self.Save()
+}
+
+func (self *Event) GetAddress() Address {
+    addr := Address{}
+    addr.ID = self.AddrId
+    e := db.First(&addr)
+    if e.Error == nil {
+        return addr
+    }
+
+    return Address{}
+}
+
+func (self *Event) GetCelules(page int, limit int) []Celule {
+    e := db.First(self)
+    if e.Error == nil {
+        celule_list := []uint{}
+        celules := []Celule{}
+        e := db.Raw("SELECT u.id FROM celules u INNER JOIN celule_groups ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&celule_list)
+
+        if e.Error == nil {
+            e := db.Find(&celules, "id in ?", celule_list)
+            if e.Error == nil {
+                return celules
+            }
+        }
+    }
+
+    return []Celule{}
+}
+
+func (self *Celule) GetEvents(page int, limit int) []Event {
+    e := db.First(self)
+    if e.Error == nil {
+        event_list := []uint{}
+        events := []Event{}
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN celule_groups ur INNER JOIN celules u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+        e = e.Find(&event_list)
+
+        if e.Error == nil {
+            e := db.Find(&events, "id in ?", event_list)
+            if e.Error == nil {
+                return events
+            }
+        }
+    }
+
+    return []Event{}
+}
+
+func (self *Event) QueryCelules(page int, limit int, query ...interface{}) []Celule {
+    e := db.First(self)
+    if e.Error == nil {
+        celule_list := []uint{}
+        celules := []Celule{}
+        e := db.Raw("SELECT u.id FROM celules u INNER JOIN celule_groups ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ?", self.ID)
+        if limit > 0 && page > 0 {
+            e = e.Offset((page-1)*limit).Limit(limit)
+        }
+
+        e = e.Find(&celule_list, query...)
+
+        if e.Error == nil {
+            e := db.Find(&celules, "id in ?", celule_list)
+            if e.Error == nil {
+                return celules
+            }
+        }
+    }
+
+    return []Celule{}
+}
+
+
+func (self *Celule) QueryEvents(page int, limit int, query...interface{}) []Event {
+    e := db.First(self)
+    if e.Error == nil {
+        event_list := []uint{}
+        events := []Event{}
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN celule_groups ur INNER JOIN celules u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ?", self.ID)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }

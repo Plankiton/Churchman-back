@@ -11,11 +11,11 @@ type UserCelule struct {
 type Celule struct {
     api.Group
     Type       string `json:"type,omitempty" gorm:"index"`
-    IID        uint   `json:"internal_id,-" gorm:"index,column:internal_id"`
-    Parent     uint   `json:"parent_id,-" gorm:"index"`
-    Addr       uint   `json:"address_id,-" gorm:"index"`
-    Leader     uint   `json:"leader_id,-" gorm:"index"`
-    CoLeader   uint   `json:"co_leader_id,-" gorm:"index,column:co_leader"`
+    IID        uint   `json:"internal_id,omitempty" gorm:"index,column:internal_id"`
+    Parent     uint   `json:"parent_id,omitempty" gorm:"index"`
+    Addr       uint   `json:"address_id,omitempty" gorm:"index"`
+    Leader     uint   `json:"leader_id,omitempty" gorm:"index"`
+    CoLeader   uint   `json:"co_leader_id,omitempty" gorm:"index,column:co_leader"`
 }
 
 func (self UserCelule) TableName() string {
@@ -35,8 +35,11 @@ func (model *Celule) Create() {
         ID := model.ID
         ModelType := model.ModelType
 
-        model.Name = GetCeluleName(*model)
-        api.ModelSave(model)
+        if model.Type == "celule" || model.Type == "" {
+            model.Type = "celule"
+            model.Name = GetCeluleName(*model)
+            api.ModelSave(model)
+        }
 
         api.Log("Created", api.ToLabel(ID, ModelType))
     }
