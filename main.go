@@ -180,6 +180,9 @@ func main() {
         "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
     ).
     Add(
+        "get", "/event/{id}/events", nil, church.GetEventListByCelule,
+    ).
+    Add(
         "post", "/celule/{id}/address", nil, church.CreateCeluleAddr,
     ).
     Add(

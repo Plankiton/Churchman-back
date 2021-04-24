@@ -7,7 +7,7 @@ import (
 type User struct {
     api.User
     State   string   `json:"civil_state,omitempty" gorm:"default:sole"`
-    ProfileId uint     `json:"-"`
+    ProfileId uint   `json:"-"`
 }
 
 func (self *User) SetProfile(profile File) {

@@ -442,3 +442,141 @@ func GetEventListByUser(r api.Request) (api.Response, int) {
         Data: event_list,
     }, 200
 }
+
+
+func EventUnsignCelule(r api.Request) (api.Response, int) {
+    celule := Celule{}
+    if db.First(&celule, "id = ?", r.PathVars["uid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetCelule();!ok || !CheckPermissions(curr, celule) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event := Event{}
+    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    celule, event = event.Unsign(celule)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(celule.Name, " Unsigned to ", event.Name),
+    }, 200
+}
+
+func EventSignCelule(r api.Request) (api.Response, int) {
+    celule := Celule{}
+    if db.First(&celule, "id = ?", r.PathVars["uid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetCelule();!ok || !CheckPermissions(curr, celule) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event := Event{}
+    if db.First(&event, "id = ?", r.PathVars["rid"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    celule, event = event.Sign(celule)
+    return api.Response {
+        Type: "Sucess",
+        Message: fmt.Sprint(celule.Name, " Signed to ", event.Name),
+    }, 200
+}
+
+func GetCeluleListByEvent(r api.Request) (api.Response, int) {
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetCelule();!ok || !CheckPermissions(curr, nil) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+
+    event := Event{}
+    if (db.First(&event, "id = ?", r.PathVars["id"]).Error != nil) {
+        return api.Response{
+            Type: "Error",
+            Message: "Evento não foi encontrado",
+        }, 404
+    }
+
+    celule_list := event.GetCelules(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: celule_list,
+    }, 200
+}
+
+
+func GetEventListByCelule(r api.Request) (api.Response, int) {
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+
+    celule := Celule{}
+    if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetCelule();!ok || !CheckPermissions(curr, celule) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    event_list := celule.GetEvents(page, limit)
+
+    return api.Response{
+        Type: "Sucess",
+        Data: event_list,
+    }, 200
+}
