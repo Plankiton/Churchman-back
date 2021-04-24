@@ -74,21 +74,32 @@ func (self UserEvent) Unsign(user User, event Event) (User, Event) {
     return user, event
 }
 
-func (self Event) Sign(user User) (User, Event) {
-    link := UserEvent{}
-    user, self = link.Sign(user, self)
-
-    return user, self
-}
-
-func (self Event) Unsign(user User) (User, Event) {
-    link := UserEvent{}
-    e := db.Where("user_id = ? AND event_id = ?", user.ID, self.ID).First(&link)
-    if e.Error == nil {
-        user, self = link.Unsign(user, self)
+func (self Event) Sign(obj interface{}) (interface{}, Event) {
+    if user, ok := obj.(User);ok {
+        link := UserEvent{}
+        user, self = link.Sign(user, self)
+        return user, self
+    } else if celule, ok := obj.(Celule);ok {
+        link := CeluleEvent{}
+        celule, self = link.Sign(celule, self)
+        return celule, self
     }
 
-    return user, self
+    return nil, self
+}
+
+func (self Event) Unsign(obj interface{}) (interface{}, Event) {
+    if user, ok := obj.(User);ok {
+        link := UserEvent{}
+        user, self = link.Unsign(user, self)
+        return user, self
+    } else if celule, ok := obj.(Celule);ok {
+        link := CeluleEvent{}
+        celule, self = link.Unsign(celule, self)
+        return celule, self
+    }
+
+    return nil, self
 }
 
 func (self *Event) SetCover(cover File) {
@@ -229,18 +240,38 @@ func (self *User) QueryEvents(page int, limit int, query...interface{}) []Event 
     return []Event{}
 }
 
-
 func (model *CeluleEvent) Create() {
-    model.ModelType = "CeluleEvent"
-
-    db.Create(model)
-
-    e := db.First(model)
-    if e.Error == nil {
-
+    if api.ModelCreate(model) == nil {
         ID := model.ID
         ModelType := model.ModelType
         api.Log("Created", api.ToLabel(ID, ModelType))
+    }
+}
+
+func (model *CeluleEvent) Delete() {
+    ID := model.ID
+    ModelType := model.ModelType
+
+    if api.ModelDelete(model) == nil {
+        api.Log("Deleted", api.ToLabel(ID, ModelType))
+    }
+}
+
+func (model *CeluleEvent) Save() {
+    ID := model.ID
+    ModelType := model.ModelType
+
+    if api.ModelSave(model) == nil {
+        api.Log("Updated", api.ToLabel(ID, ModelType))
+    }
+}
+
+func (model *CeluleEvent) Update(columns api.Dict) {
+    ID := model.ID
+    ModelType := model.ModelType
+
+    if api.ModelUpdate(model, columns) == nil {
+        api.Log("Updated", api.ToLabel(ID, ModelType))
     }
 }
 
@@ -262,71 +293,6 @@ func (self CeluleEvent) Unsign(celule Celule, event Event) (Celule, Event) {
     api.Log("Unlinked", api.ToLabel(celule.ID, celule.ModelType), celule.Name, "from", api.ToLabel(event.ID, event.ModelType), event.Name)
 
     return celule, event
-}
-
-func (self Event) Sign(celule Celule) (Celule, Event) {
-    link := CeluleEvent{}
-    celule, self = link.Sign(celule, self)
-
-    return celule, self
-}
-
-func (self Event) Unsign(celule Celule) (Celule, Event) {
-    link := CeluleEvent{}
-    e := db.Where("celule_id = ? AND event_id = ?", celule.ID, self.ID).First(&link)
-    if e.Error == nil {
-        celule, self = link.Unsign(celule, self)
-    }
-
-    return celule, self
-}
-
-func (self *Event) SetCover(cover File) {
-    {
-        tmp_cover := File{}
-        e := db.First(&tmp_cover, "id = ?", self.CoverId)
-        if e.Error == nil {
-            tmp_cover.Delete()
-        }
-    }
-
-    self.CoverId = cover.ID
-    self.Save()
-}
-
-func (self *Event) GetCover() File {
-    cover := File{}
-    cover.ID = self.CoverId
-    e := db.First(&cover)
-    if e.Error == nil {
-        return cover
-    }
-
-    return File{}
-}
-
-func (self *Event) SetAddress(addr Address) {
-    {
-        tmp_addr := File{}
-        e := db.First(&tmp_addr, "id = ?", self.AddrId)
-        if e.Error == nil {
-            tmp_addr.Delete()
-        }
-    }
-
-    self.AddrId = addr.ID
-    self.Save()
-}
-
-func (self *Event) GetAddress() Address {
-    addr := Address{}
-    addr.ID = self.AddrId
-    e := db.First(&addr)
-    if e.Error == nil {
-        return addr
-    }
-
-    return Address{}
 }
 
 func (self *Event) GetCelules(page int, limit int) []Celule {
@@ -418,3 +384,4 @@ func (self *Celule) QueryEvents(page int, limit int, query...interface{}) []Even
 
     return []Event{}
 }
+
