@@ -21,9 +21,19 @@ func (model *CeluleEvent) TableName() string {
 
 type Event struct {
     api.Event
+
     Periodic    string `json:"periodic,omitempty"`
     WeeklyDay   uint   `json:"weekly_day,omitempty"`
     MonthlyDay  uint   `json:"monthly_day,omitempty"`
+
+    NeedPass    bool   `json:"need_pass,omitempty"`
+}
+
+type EventPass struct {
+    api.Model
+    EventId     uint    `json:"-"`
+    UserId      uint    `json:"-"`
+    Confirmed   bool    `json:"confirmed,omitempty"`
 }
 
 func (model *Event) Create() {
@@ -58,6 +68,14 @@ func (self UserEvent) Sign(user User, event Event) (User, Event) {
     self.UserId = user.ID
     self.EventId = event.ID
 
+    if event.NeedPass {
+        event_pass := EventPass{}
+        event_pass.UserId = user.ID
+        event_pass.EventId = event.ID
+
+        api.ModelCreate(event_pass)
+    }
+
     self.Create()
     api.Log("Linked", api.ToLabel(user.ID, user.ModelType), user.Name, "to", api.ToLabel(event.ID, event.ModelType), event.Name)
 
@@ -67,6 +85,13 @@ func (self UserEvent) Sign(user User, event Event) (User, Event) {
 func (self UserEvent) Unsign(user User, event Event) (User, Event) {
     self.UserId = user.ID
     self.EventId = event.ID
+
+    if event.NeedPass {
+        event_pass := EventPass{}
+        if db.First(&event_pass, "user_id = ? AND event_id = ?", user.ID, event.ID).Error == nil {
+            api.ModelDelete(event_pass)
+        }
+    }
 
     self.Delete()
     api.Log("Unlinked", api.ToLabel(user.ID, user.ModelType), user.Name, "from", api.ToLabel(event.ID, event.ModelType), event.Name)

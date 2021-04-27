@@ -28,6 +28,145 @@ func GetEvent(r api.Request) (api.Response, int) {
     }, 200
 }
 
+func RegectEventRequest(r api.Request) (api.Response, int) {
+    if !api.ValidateData(r.Data, api.GenericJsonObj) {
+        msg := fmt.Sprintf("Dados enviados são inválidos")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    u := EventPass {}
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
+        msg := fmt.Sprint("Evento não foi encontrado")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    u.Confirmed = false
+    api.ModelSave(u)
+
+    return api.Response {
+        Type: "Success",
+        Message: "Usuario regeitado com sucesso",
+    }, 200
+}
+
+func ApproveEventRequest(r api.Request) (api.Response, int) {
+    if !api.ValidateData(r.Data, api.GenericJsonObj) {
+        msg := fmt.Sprintf("Dados enviados são inválidos")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    u := EventPass {}
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
+        msg := fmt.Sprint("Evento não foi encontrado")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 404
+    }
+
+    u.Confirmed = true
+    api.ModelSave(u)
+
+    return api.Response {
+        Type: "Success",
+        Message: "Usuario aprovado com sucesso",
+    }, 200
+}
+
+func GetEventRequests(r api.Request) (api.Response, int) {
+    if !api.ValidateData(r.Data, api.GenericJsonObj) {
+        msg := fmt.Sprintf("Dados enviados são inválidos")
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 400
+    }
+
+    token := Token{}
+    token.ID = r.Token
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
+        msg := "Você não tem permissão para acessar isso"
+        api.Err(msg)
+        return api.Response {
+            Message: msg,
+            Type:    "Error",
+        }, 405
+    }
+
+    var limit, page int
+
+    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+
+    event_list := []EventPass{}
+    offset := (page - 1) * limit
+    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Where("confirm <> true").Find(&event_list)
+
+    if e.Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Erro interno desconhecido",
+        }, 500
+    }
+
+    custom_event_list := []map[string]interface{}{}
+    for _, e := range event_list {
+        event := map[string]interface{}{}
+        event_name := ""
+        user_name := ""
+
+        db.Model(Event{}).Select("name").First(&event_name, "id = ?", e.EventId)
+        db.Model(User{}).Select("name").First(&user_name, "id = ?", e.UserId)
+
+        api.Copy(e, &event)
+        event["event"] = event_name
+        event["user"] = user_name
+
+        custom_event_list = append(custom_event_list, event)
+    }
+
+    return api.Response{
+        Type: "Sucess",
+        Data: custom_event_list,
+    }, 200
+}
+
 func CreateEvent(r api.Request) (api.Response, int) {
     if !api.ValidateData(r.Data, api.GenericJsonObj) {
         msg := fmt.Sprintf("Dados enviados são inválidos")
