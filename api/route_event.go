@@ -154,7 +154,7 @@ func GetEventRequests(r api.Request) (api.Response, int) {
         db.Model(Event{}).Select("name").First(&event_name, "id = ?", e.EventId)
         db.Model(User{}).Select("name").First(&user_name, "id = ?", e.UserId)
 
-        api.Copy(e, &event)
+        api.MapTo(e, &event)
         event["event"] = event_name
         event["user"] = user_name
 

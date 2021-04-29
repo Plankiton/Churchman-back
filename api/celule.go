@@ -11,6 +11,7 @@ type UserCelule struct {
 type Celule struct {
     api.Group
     Type       string `json:"type,omitempty" gorm:"index"`
+    LocalType  string `json:"local_type,omitempty"`
     IID        uint   `json:"internal_id,omitempty" gorm:"index,column:internal_id"`
     Parent     uint   `json:"parent_id,omitempty" gorm:"index"`
     Addr       uint   `json:"address_id,omitempty" gorm:"index"`
@@ -164,12 +165,21 @@ func (self *Celule) GetUsers(page int, limit int) []User {
     return []User{}
 }
 
-func (self *User) GetCelules(page int, limit int) []Celule {
+func (self *User) GetCelules(page int, limit int, church ...bool) []Celule {
+    query_str := "SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?"
+    if church != nil {
+        if church[0] {
+            query_str += "AND r.type = 'church'"
+        } else {
+            query_str += "AND r.type <> 'church'"
+        }
+    }
+
     e := db.First(self)
     if e.Error == nil {
         celule_list := []uint{}
         celules := []Celule{}
-        e := db.Raw("SELECT r.id FROM groups r INNER JOIN user_groups ur INNER JOIN users u ON ur.group_id = r.id AND ur.user_id = u.id AND u.id = ?", self.ID)
+        e := db.Raw(query_str, self.ID)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }

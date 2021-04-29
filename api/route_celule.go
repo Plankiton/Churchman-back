@@ -377,7 +377,9 @@ func GetUserListByCelule(r api.Request) (api.Response, int) {
 
 func GetCeluleListByUser(r api.Request) (api.Response, int) {
     var limit, page int
+    var church bool
 
+    church, _ = sc.ParseBool(r.Conf["query"].(url.Values).Get("church"))
     limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
     page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
 
@@ -400,7 +402,7 @@ func GetCeluleListByUser(r api.Request) (api.Response, int) {
         }, 405
     }
 
-    celule_list := user.GetCelules(page, limit)
+    celule_list := user.GetCelules(page, limit, church)
 
     return api.Response{
         Type: "Sucess",
