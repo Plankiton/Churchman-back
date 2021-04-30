@@ -2,6 +2,7 @@ package church
 
 import (
 	"fmt"
+  str "strings"
 
 	"net/url"
 	sc "strconv"
@@ -78,6 +79,15 @@ func CreateCelule(r api.Request) (api.Response, int) {
     celule := Celule {}
     api.MapTo(data, &celule)
     celule.Create()
+
+    alt_name, _ := sc.ParseBool(r.Conf["query"].(url.Values).Get("alt_id"))
+    if alt_name {
+        celule.Name = str.Replace(celule.Name, "m", "h", -1)
+        celule.Name = str.Replace(celule.Name, "f", "m", -1)
+    }
+
+    celule.Save()
+
     return api.Response {
         Type: "Sucess",
         Data: celule,

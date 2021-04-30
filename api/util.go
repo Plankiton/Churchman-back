@@ -11,6 +11,9 @@ func TimeLayout() string {
 }
 
 func GetCeluleName(c Celule) string {
+    if c.Type == "church" {
+        return c.Name
+    }
 
     iid := ""
     if c.IID/10 < 1 {

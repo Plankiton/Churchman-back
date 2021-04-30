@@ -36,11 +36,8 @@ func (model *Celule) Create() {
         ID := model.ID
         ModelType := model.ModelType
 
-        if model.Type == "celule" || model.Type == "" {
-            model.Type = "celule"
-            model.Name = GetCeluleName(*model)
-            api.ModelSave(model)
-        }
+        model.Name = GetCeluleName(*model)
+        api.ModelSave(model)
 
         api.Log("Created", api.ToLabel(ID, ModelType))
     }
