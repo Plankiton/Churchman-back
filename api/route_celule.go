@@ -190,6 +190,12 @@ func CeluleGetCoLeader(r api.Request) (api.Response, int) {
             Message: "Timóteo não encontrado",
         }, 404
     }
+
+    celule.CoLeader = co_leader.ID
+    celule.Save()
+
+    celule.Sign(co_leader)
+
     return api.Response {
         Type: "Sucess",
         Data: co_leader,
@@ -215,6 +221,8 @@ func CeluleSetLeader(r api.Request) (api.Response, int) {
 
     celule.Leader = leader.ID
     celule.Save()
+
+    celule.Sign(leader)
 
     return api.Response {
         Type: "Sucess",

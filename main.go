@@ -38,6 +38,17 @@ func main() {
         root.Create()
 
         pastor.Sign(root)
+
+        igreja_do_deus := church.Celule{}
+        igreja_do_deus.Name = "Igreja do deus"
+        igreja_do_deus.Type = "church"
+        igreja_do_deus.Leader = root.ID
+        igreja_do_deus.Create()
+
+        link := church.UserCelule{}
+        link.UserId = root.ID
+        link.GroupId = igreja_do_deus.ID
+        link.Create()
     }
 
     r.
