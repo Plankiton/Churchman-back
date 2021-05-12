@@ -2,6 +2,7 @@ package main
 
 import (
     "os"
+    "time"
 
     "gorm.io/gorm"
     "github.com/Coff3e/Church-app/api"
@@ -44,6 +45,21 @@ func main() {
         igreja_do_deus.Type = "church"
         igreja_do_deus.Leader = root.ID
         igreja_do_deus.Create()
+
+        // Horarios de cultos
+        {
+            week := []string{ "Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sabado" }
+            cloc := []time.Time{ time.Now(), time.Now(), time.Now(), time.Now(), time.Now(), time.Now(), time.Now() }
+            for d, _ := range week {
+                event := church.Event{}
+                event.Periodic = true
+                event.WeeklyDay = uint(d+1)
+                event.BeginAt = cloc[d]
+                event.EndAt = cloc[d].Add(2 * time.Hour)
+                event.Create()
+                event.Sign(igreja_do_deus)
+            }
+        }
 
         link := church.UserCelule{}
         link.UserId = root.ID
@@ -95,7 +111,9 @@ func main() {
         "get", "/user/{id}/celules", nil, church.GetCeluleListByUser,
     ).
     Add(
-        "get", "/user/{id}/events", nil, church.GetEventListByUser,
+        "get", "/user/{id}/events", api.RouteConf {
+            "need-auth": false,
+        },  church.GetEventListByUser,
     ).
 
 
@@ -191,7 +209,7 @@ func main() {
         "get", "/celule/{id}/users", nil, church.GetUserListByCelule,
     ).
     Add(
-        "get", "/event/{id}/events", nil, church.GetEventListByCelule,
+        "get", "/celule/{id}/events", nil, church.GetEventListByCelule,
     ).
     Add(
         "post", "/celule/{id}/address", nil, church.CreateCeluleAddr,

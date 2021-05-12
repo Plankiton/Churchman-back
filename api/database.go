@@ -23,6 +23,7 @@ func (router *Church) SignDB(con_str string, createDB func (string) (*gorm.DB, e
 
             &Event{},
             &UserEvent{},
+            &CeluleEvent{},
 
             &File{},
         }

@@ -16,15 +16,14 @@ type CeluleEvent struct {
 }
 
 func (model *CeluleEvent) TableName() string {
-    return "celule_groups"
+    return "group_events"
 }
 
 type Event struct {
     api.Event
 
-    Periodic    string `json:"periodic,omitempty"`
+    Periodic    bool   `json:"periodic,omitempty" gorm:"default:false"`
     WeeklyDay   uint   `json:"weekly_day,omitempty"`
-    MonthlyDay  uint   `json:"monthly_day,omitempty"`
 
     NeedPass    bool   `json:"need_pass,omitempty"`
 }
@@ -325,7 +324,7 @@ func (self *Event) GetCelules(page int, limit int) []Celule {
     if e.Error == nil {
         celule_list := []uint{}
         celules := []Celule{}
-        e := db.Raw("SELECT u.id FROM celules u INNER JOIN celule_groups ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ?", self.ID)
+        e := db.Raw("SELECT u.id FROM groups u INNER JOIN group_events ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ?", self.ID)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }
@@ -342,12 +341,12 @@ func (self *Event) GetCelules(page int, limit int) []Celule {
     return []Celule{}
 }
 
-func (self *Celule) GetEvents(page int, limit int) []Event {
+func (self *Celule) GetEvents(page int, limit int, periodic bool) []Event {
     e := db.First(self)
     if e.Error == nil {
         event_list := []uint{}
         events := []Event{}
-        e := db.Raw("SELECT r.id FROM events r INNER JOIN celule_groups ur INNER JOIN celules u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ?", self.ID)
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN group_events ur INNER JOIN groups u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ? AND r.periodic = ?", self.ID, periodic)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }
@@ -369,7 +368,7 @@ func (self *Event) QueryCelules(page int, limit int, query ...interface{}) []Cel
     if e.Error == nil {
         celule_list := []uint{}
         celules := []Celule{}
-        e := db.Raw("SELECT u.id FROM celules u INNER JOIN celule_groups ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ?", self.ID)
+        e := db.Raw("SELECT u.id FROM groups u INNER JOIN group_events ur INNER JOIN events r ON ur.event_id = r.id AND ur.celule_id = u.id AND r.id = ? AND r.periodic = false", self.ID)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }
@@ -393,7 +392,7 @@ func (self *Celule) QueryEvents(page int, limit int, query...interface{}) []Even
     if e.Error == nil {
         event_list := []uint{}
         events := []Event{}
-        e := db.Raw("SELECT r.id FROM events r INNER JOIN celule_groups ur INNER JOIN celules u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ?", self.ID)
+        e := db.Raw("SELECT r.id FROM events r INNER JOIN group_events ur INNER JOIN groups u ON ur.event_id = r.id AND ur.celule_id = u.id AND u.id = ?", self.ID)
         if limit > 0 && page > 0 {
             e = e.Offset((page-1)*limit).Limit(limit)
         }

@@ -310,10 +310,11 @@ func GetEventList(r api.Request) (api.Response, int) {
 
     limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
     page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    periodic, _ := sc.ParseBool(r.Conf["query"].(url.Values).Get("periodic"))
 
     event_list := []Event{}
     offset := (page - 1) * limit
-    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Where("periodic <> 'week' OR periodic <> 'month'").Find(&event_list)
+    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Where("periodic = ?", periodic).Find(&event_list)
 
     if e.Error != nil {
         return api.Response{
@@ -688,10 +689,9 @@ func GetCeluleListByEvent(r api.Request) (api.Response, int) {
 
 
 func GetEventListByCelule(r api.Request) (api.Response, int) {
-    var limit, page int
-
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    limit, _ := sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, _ := sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    periodic, _ := sc.ParseBool(r.Conf["query"].(url.Values).Get("periodic"))
 
     celule := Celule{}
     if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
@@ -701,18 +701,7 @@ func GetEventListByCelule(r api.Request) (api.Response, int) {
         }, 404
     }
 
-    token := Token{}
-    token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, celule) {
-        msg := "Você não tem permissão para acessar isso"
-        api.Err(msg)
-        return api.Response {
-            Message: msg,
-            Type:    "Error",
-        }, 405
-    }
-
-    event_list := celule.GetEvents(page, limit)
+    event_list := celule.GetEvents(page, limit, periodic)
 
     return api.Response{
         Type: "Sucess",
