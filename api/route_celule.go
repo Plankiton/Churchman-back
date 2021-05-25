@@ -6,6 +6,7 @@ import (
 
 	"net/url"
 	sc "strconv"
+  mp "mime/multipart"
 
 	"github.com/Coff3e/Api"
 )
@@ -19,6 +20,23 @@ func GetCelule(r api.Request) (api.Response, int) {
             Message: msg,
             Type:    "Error",
         }, 404
+    }
+    church := false
+    if u.Type == "church" {
+        church = true
+    }
+
+    token := Token {}
+    token.ID = r.Token
+    if !church {
+        if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, u) {
+            msg := "Você não tem permissão para acessar isso"
+            api.Err(msg)
+            return api.Response {
+                Message: msg,
+                Type:    "Error",
+            }, 405
+        }
     }
 
     return api.Response {
@@ -452,7 +470,7 @@ func GetCeluleList(r api.Request) (api.Response, int) {
     if e.Error != nil {
         return api.Response{
             Type: "Error",
-            Message: "Error on creating of profile on database",
+            Message: "Error on creating of cover on database",
         }, 500
     }
 
@@ -520,3 +538,66 @@ func GetCeluleAddr(r api.Request) (api.Response, int) {
         Data: addr,
     }, 200
 }
+
+func CreateCeluleCover(r api.Request) (api.Response, int) {
+    celule := Celule{}
+    if db.First(&celule, "id = ?", r.PathVars["id"]).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Fiel não encontrado",
+        }, 404
+    }
+
+    token := Token{}
+    token.ID = r.Token
+
+    if curr, ok := (token).GetUser();!ok {
+        if !CheckPermissions(curr, celule) {
+            api.SuperPut(curr)
+            api.SuperPut(CheckPermissions(curr, celule))
+            msg := "Você não tem permissão para acessar isso"
+            api.Err(msg)
+            return api.Response {
+                Message: msg,
+                Type:    "Error",
+            }, 405
+        }
+    }
+
+    if r.Data == nil || !api.ValidateData(r.Data, api.GenericForm) {
+        return api.Response{
+            Type: "Error",
+            Message: "Data must be a multipart-form",
+        }, 400
+    }
+
+    data := r.Data.(*mp.Form)
+
+    cover := File {}
+    cover.Load(data)
+
+    if db.First(&cover).Error != nil {
+        return api.Response{
+            Type: "Error",
+            Message: "Erro interno desconhecido",
+        }, 500
+    }
+
+    celule.SetCover(cover)
+    return api.Response {
+        Type: "Sucess",
+        Data: cover,
+    }, 200
+}
+
+func GetCeluleCover(r api.Request) ([]byte, int) {
+    u := Celule {}
+    if db.First(&u, "id = ?", r.PathVars["id"]).Error != nil {
+        msg := fmt.Sprint("Fiel não encontrado")
+        api.Err(msg)
+        return []byte{}, 404
+    }
+    p := u.GetCover()
+    return []byte(p.Render()), 200
+}
+

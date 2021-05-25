@@ -111,9 +111,7 @@ func main() {
         "get", "/user/{id}/celules", nil, church.GetCeluleListByUser,
     ).
     Add(
-        "get", "/user/{id}/events", api.RouteConf {
-            "need-auth": false,
-        },  church.GetEventListByUser,
+        "get", "/user/{id}/events", nil,  church.GetEventListByUser,
     ).
 
 
@@ -146,10 +144,14 @@ func main() {
 
 
     Add(
-        "get", "/event/{id}", nil, church.GetEvent,
+        "get", "/event/{id}", api.RouteConf {
+            "need-auth": false,
+        }, church.GetEvent,
     ).
     Add(
-        "get", "/event/", nil, church.GetEventList,
+        "get", "/event/", api.RouteConf {
+            "need-auth": false,
+        }, church.GetEventList,
     ).
     Add(
         "post", "/event/", nil, church.CreateEvent,
@@ -173,7 +175,9 @@ func main() {
         "post", "/event/{id}/cover", nil, church.CreateEventCover,
     ).
     Add(
-        "get", "/event/{id}/cover", nil, church.GetEventCover,
+        "get", "/event/{id}/cover", api.RouteConf {
+            "need-auth": false,
+        },  church.GetEventCover,
     ).
     Add(
         "post", "/event/{id}/address", nil, church.CreateEventAddr,
@@ -181,11 +185,11 @@ func main() {
     Add(
         "get", "/event/{id}/address", nil, church.GetEventAddr,
     ).
-
-
-
     Add(
-        "get", "/celule/{id}", nil, church.GetCelule,
+        "get", "/celule/{id}", api.RouteConf {
+            "need-auth": true,
+            "auth-optional": true,
+        },  church.GetCelule,
     ).
     Add(
         "get", "/celule/", nil, church.GetCeluleList,
@@ -234,7 +238,16 @@ func main() {
     ).
     Add(
         "get", "/celule/{id}/parent", nil, church.CeluleGetParent,
+    ).
+    Add(
+        "post", "/celule/{id}/cover", nil, church.CreateCeluleCover,
+    ).
+    Add(
+        "get", "/celule/{id}/cover", api.RouteConf {
+            "need-auth": false,
+        }, church.GetCeluleCover,
     )
+
 
     r.Run("/", 8000)
 }

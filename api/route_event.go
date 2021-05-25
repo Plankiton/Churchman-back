@@ -340,13 +340,13 @@ func CreateEventCover(r api.Request) (api.Response, int) {
 
     token := Token{}
     token.ID = r.Token
-    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, event) {
+    if curr, ok := (token).GetUser();!ok || !CheckPermissions(curr, nil) {
         msg := "Você não tem permissão para acessar isso"
         api.Err(msg)
         return api.Response {
             Message: msg,
             Type:    "Error",
-        }, 405
+        }, 403
     }
 
     if r.Data == nil || !api.ValidateData(r.Data, api.GenericForm) {

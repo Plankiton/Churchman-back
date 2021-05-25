@@ -24,15 +24,13 @@ func (model *Token) Create() {
     model.ModelType = api.GetModelType(model)
 
     user := User{}
-    user.ID = model.UserId
-
-    if db.First(&user).Error == nil {
+    if db.First(&user, "id = ?", model.UserId).Error == nil {
         var order int64
         db.Find(model).Count(&order)
 
         model.UserId = user.ID
         model.ID = api.ToHash(fmt.Sprintf(
-            "%d;%d;%s;%s;%s", order, user.ID, user.Name, user.Email, user.Phone,
+            "%d;%d;%s;%s;%s", order+1, user.ID, user.Name, user.Email, user.Phone,
         ))
 
         if api.ModelCreate(model) == nil {

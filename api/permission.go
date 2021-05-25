@@ -7,6 +7,7 @@ import (
 
 func CheckPermissions(curr User, object interface {}) bool {
     if object == nil {
+        api.SuperPut(curr.GetRoles(0,0))
         return CheckPermissions(curr, curr.GetRoles(0,0))
     }
 

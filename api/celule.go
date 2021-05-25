@@ -17,6 +17,7 @@ type Celule struct {
     Addr       uint   `json:"address_id,omitempty" gorm:"index"`
     Leader     uint   `json:"leader_id,omitempty" gorm:"index"`
     CoLeader   uint   `json:"co_leader_id,omitempty" gorm:"index,column:co_leader"`
+    CoverId    uint   `json:"-"`
 }
 
 func (self UserCelule) TableName() string {
@@ -237,5 +238,33 @@ func (self *User) QueryCelules(page int, limit int, query...interface{}) []Celul
     }
 
     return []Celule{}
+}
+
+func (self *Celule) SetCover(cover File) {
+    {
+        tmp_cover := File{}
+        e := db.First(&tmp_cover, "id = ?", self.CoverId)
+        if e.Error == nil {
+            tmp_cover.Delete()
+        }
+
+        e = db.First(&tmp_cover, "filename = ? OR id = ?", cover.Filename, cover.ID)
+        if e.Error != nil {
+            tmp_cover.Create()
+        }
+    }
+
+    self.Update(api.Dict { "cover_id": cover.ID })
+}
+
+func (self *Celule) GetCover() File {
+    cover := File{}
+    cover.ID = self.CoverId
+    e := db.First(&cover)
+    if e.Error == nil {
+        return cover
+    }
+
+    return File{}
 }
 
