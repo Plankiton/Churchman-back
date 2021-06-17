@@ -1,104 +1,388 @@
-# Church App
+# The API reference
 
 ---
 
+## Post /verify
+
+This route verify `token` for login and show data from logged user if him logged, othewise it send a error message.
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+response:
+```json
+{
+   "type": "sucess",
+   "data": {
+      "auth": "<token>",
+      "user": {
+          "id": "<id>",
+          "name": "<name>",
+          "email": "<email>",
+          "genre": "<genre>",
+          "phone": "<phone>",
+          "born": "<born_date>",
+          "state": "<civil_state>",
+          "profile": {
+              "data": "<image>",
+              "alt_text": "<text>"
+          }
+      }
+   }
+}
+```
+
+## Post /login
+
+This route is the way to make a login on server, the return will be the user data and the login `token`.
+
+data:
+```json
+{
+    "data": {
+       "email": "<email>",
+       "pass": "<password>" 
+    }
+}
+```
+response:
+```json
+{
+   "type": "sucess",
+   "data": {
+      "auth": "<token>",
+      "user": {
+          "id": "<id>",
+          "name": "<name>",
+          "email": "<email>",
+          "genre": "<genre>",
+          "phone": "<phone>",
+          "born": "<born_date>",
+          "state": "<civil_state>",
+          "profile": {
+              "data": "<image>",
+              "alt_text": "<text>"
+          }
+      }
+   }
+}
+```
+
+## Post /logout
+
+This route is the way to make a login on server, the return will be the user data and the login `token`.
+
+data:
+```json
+{
+    "auth": "<token>"
+}
+```
+response:
+```json
+{
+   "type": "sucess",
+   "message": "Token \"<Token>\" removed"
+}
+```
+
+## Post /user
+
+This route is for to create users on system, in this case the api will to send a email for atual people and him with `token` for verify before to create the user and returns a default sucess message.
+
+data:
+
+```json
+{
+   "auth": "<token>",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "email": "<email>",
+      "pass": "<password>",
+      "genre": "<genre>",
+      "phone": "<phone>",
+      "born": "<born_date>",
+      "state": "<civil_state>",
+      "profile": {
+           "data": "<image>",
+           "alt_text": "<text>"
+      }
+   }
+}
+```
+response:
+```json
+{
+   "type": "sucess",
+    "message": "See you mail box for verify your account"
+}
+```
+
+## Get /user?p=`{page}`&l=`{limit}`
+
+Getting the people list from server (the logged user must have high privileges), the querys `p` if for page number, and `l` is the limit of events per page.
 
 
-Owner: Pr. Guilherme Henrique 
 
-Number: +55 86 98828 6044
+data:
 
-Price: 2500 (5 parcelas)
+```json
+{
+   "auth": "<token>"
+}
+```
 
+response:
 
-
-App para gerenciar a evolução de fiéis, eventos e células em uma igreja.
-
-
-
-## Database scheme
-
-```yaml
-EventGroup:
-   - name
-   - description
-   -> Events
-Event:
-   - name
-   - description
-   - model_type
-   -> Covers
-   -> Permissions
-   -> Parent:Celule|Role
-   -> Members
-   - event_type:Culto|Default
-   - begin
-   - end
-Cover:
-   - image
-   - alt_text
-Celule:
-   - class
-   - leader
-   - co_leader
-   -> Church
-   -> Parent:Celule|Church
-   -> Members:Celular
-Member:
-   - type
-   - status
-   -> group:Event|Role|Celule|Church
-   -> Person
-Person:
-   - name
-   - telefone
-   - email
-    -> Roles
-Role:
-   - name
-    - description
-    -> Permissions
-Permission:
-    - name
-    - description
-   - permission
-      - create
-      - remove
-      - update
-      - read
-    -> ChildTypes
-ChildType:
-   -> Roles
-   -> Celules
-   -> Events
-   -> Persons
-
+```json
+{
+   "status": "sucess",
+   "data": [
+     {
+        "id": "<id>",
+        "name": "<name>",
+        "profile": {
+           "data": "<image>",
+           "alt_text": "<text>"
+        }
+     },
+     ...
+  ]
+}
 ```
 
 
 
-## Celule tree
+## Get /user/`{id}`
 
+Getting user data, if logged user have'nt high privileges or is not the user it returns a error response
 
+data:
 
-```tree
-root                         - pastor
-   Celule:root_G12           - 12 persons role:root_G12
-      Role:root_G12
-         Celule:default
-            Persons          - 12 persons
+```json
+{
+   "auth": ""
+}
 ```
 
-### Celule algorithm
+response:
 
-Quando a celula tem um G12 como líder, ela começa com o seu gênero e o seu número na lista da sua categoria (`M|F`+`{ord_number}`), celulas descendentes teríam o nome do da célula do seu G12 mais o id da subcelula (`G12_id`+`{ord_number0}..{ord_numberN}`).
-
-
-
-## Role tree
-
-```tree
-Role:root_G12|teacher
-   Role:member
-      Role:default
+```json
+{
+   "type": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "email": "<email>",
+      "genre": "<genre>",
+      "phone": "<phone>",
+      "born": "<born_date>",
+      "state": "<civil_state>",
+      "profile": {
+           "data": "<image>",
+           "alt_text": "<text>"
+      },
+      "auth": "<token>"
+   }
+}
 ```
+
+
+
+## Post /user/`{id}`
+
+Route for edit existent users, the logged user must be the user or have high privileges, otherwise it returns a error.
+
+
+
+data:
+```json
+{
+   "auth": "<token>",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "email": "<email>",
+      "pass": "<password>",
+      "genre": "<genre>",
+      "phone": "<phone>",
+      "born": "<born_date>",
+      "state": "<civil_state>",
+      "profile": {
+           "data": "<image>",
+           "alt_text": "<text>"
+      },
+   }
+}
+```
+
+response:
+
+```json
+{
+   "type": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "email": "<email>",
+      "genre": "<genre>",
+      "phone": "<phone>",
+      "born": "<born_date>",
+      "state": "<civil_state>",
+      "profile": {
+           "data": "<image>",
+           "alt_text": "<text>"
+      },
+      "auth": "<token>"
+   }
+}
+```
+
+## Get /event?p=`{page}`&l=`{limit}`
+
+Getting the event list from server, the querys `p` if for page number, and `l` is the limit of events per page.
+
+
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+response:
+```json
+{
+   "status": "sucess",
+   "data": [
+     {
+        "id": "<id>",
+        "name": "<name>",
+        "cover": {
+           "data": "<image>",
+           "alt_text": "<text>"
+        }
+     },
+     ...
+  ]
+}
+```
+
+## Get /event/`{id}`
+
+Getting the event informations by event id
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "desc": "<description>",
+      "type": "church|celule",
+      "address": {
+          "street": "<street>",
+          "neighborhood": "<neighborhood>",
+          "city": "<city>",
+          "state": "<state>",
+          "cep": "<postal code>"
+      },
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
+      },
+      "parent": "<role_id|user_id|celule_id|event_id|event_group_id>", 
+      "members": [
+          {
+              "user": "<user_id>",
+          },
+          ...
+      ],
+   }
+}
+```
+
+
+
+## Get /celule/`{id}`
+
+Getting the celule informations by celule id, user logged must be on parent of celule if it exists
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "type": "church|celule",
+      "address": {
+          "street": "<street>",
+          "neighborhood": "<neighborhood>",
+          "city": "<city>",
+          "state": "<state>",
+          "cep": "<postal code>"
+      },
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
+      },
+      "Parent": "<celule_id>",
+   }
+}
+```
+
+## Get /celule?p=`{page}`&l=`{limit}`
+
+Getting the celule list from server, the querys `p` if for page number, and `l` is the limit of events per page.
+
+
+
+data:
+
+```json
+{
+   "auth": "<token>"
+}
+```
+
+response:
+
+```json
+{
+   "status": "sucess",
+   "data": {
+      "id": "<id>",
+      "name": "<name>",
+      "cover": {
+         "data": "<data>",
+         "alt_text": "<text>"
+      }
+   }
+}
+```
+
