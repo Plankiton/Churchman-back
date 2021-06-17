@@ -192,7 +192,7 @@ func CreateEvent(r api.Request) (api.Response, int) {
 
     neededs := []string{
             "name", "begin", "end",
-        }
+    }
     if (len(data)<len(neededs)){
         msg := "Campo"
         if (len(data)<len(neededs)-1) {
@@ -219,11 +219,12 @@ func CreateEvent(r api.Request) (api.Response, int) {
 
     api.MapTo(data, &event)
 
-    begin_time, _ := time.Parse(TimeLayout(), data["begin"].(string))
-    end_time, _ := time.Parse(TimeLayout(), data["begin"].(string))
+    begin_time, _ := time.Parse(data["begin"].(string), TimeLayout())
+    end_time, _ := time.Parse(data["end"].(string), TimeLayout())
 
     event.BeginAt = begin_time
     event.EndAt = end_time
+    event.Name = data["name"].(string)
 
     event.Create()
 
@@ -267,6 +268,20 @@ func UpdateEvent(r api.Request) (api.Response, int) {
     }
 
     api.MapTo(data, &event)
+
+    if _, e := data["begin"];e {
+        begin_time, _ := time.Parse(data["begin"].(string), TimeLayout())
+        event.BeginAt = begin_time
+    }
+    if _, e := data["end"];e {
+        end_time, _ := time.Parse(data["end"].(string), TimeLayout())
+        event.EndAt = end_time
+    }
+
+    if _, e := data["name"];e {
+        event.Name = data["name"].(string)
+    }
+
     event.Save()
 
     return api.Response {
@@ -306,15 +321,17 @@ func DeleteEvent(r api.Request) (api.Response, int) {
 }
 
 func GetEventList(r api.Request) (api.Response, int) {
-    var limit, page int
+    limit, _ := sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
+    page, err := sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
+    if err != nil {
+        page = 1
+    }
 
-    limit, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("l"))
-    page, _ = sc.Atoi(r.Conf["query"].(url.Values).Get("p"))
     periodic, _ := sc.ParseBool(r.Conf["query"].(url.Values).Get("periodic"))
 
-    event_list := []Event{}
+    event_list := []map[string]interface{}{}
     offset := (page - 1) * limit
-    e := db.Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Where("periodic = ?", periodic).Find(&event_list)
+    e := db.Model(Event{}).Offset(offset).Limit(limit).Order("created_at desc, updated_at, id").Where("periodic = ?", periodic).Find(&event_list)
 
     if e.Error != nil {
         return api.Response{

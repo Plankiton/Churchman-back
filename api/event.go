@@ -22,6 +22,7 @@ func (model *CeluleEvent) TableName() string {
 type Event struct {
     api.Event
 
+    Name        string `json:"name,omitempty"`
     Periodic    bool   `json:"periodic,omitempty" gorm:"default:false"`
     WeeklyDay   uint   `json:"weekly_day,omitempty"`
 
